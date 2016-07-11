@@ -8,7 +8,6 @@ function mapping_menu() {
 		'page arguments' => array('mapping_basic'),
 		'access callback' => TRUE,
 	);
-	
 	return $items;
 }
 
@@ -224,19 +223,17 @@ function mapping_basic($form, &$form_state) {
 					'#type' => 'textfield',
 					'#size' => '10',
 					'#states' => array(
-								'disabled' => array(
+								'readonly' => array(
 								':input[name="relations_fieldset['.$i.'][known_URI]"]' => array('checked' => FALSE),
 									),
 								),
-					 '#prefix' => "",
-					 '#suffix' => "",
 					);
 				
 				$form['relations_fieldset'][$i]['core_property_URI'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 					'#states' => array(
-								'disabled' => array(
+								'readonly' => array(
 								':input[name="relations_fieldset['.$i.'][known_URI]"]' => array('checked' => FALSE),
 									),
 								),
@@ -245,14 +242,14 @@ function mapping_basic($form, &$form_state) {
 				$form['relations_fieldset'][$i]['relation_URI'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
-					 '#attributes' => array('disabled' => 'disabled'),
+					 '#attributes' => array('hidden' => 'hidden'),
 					);
 				
 				$form['relations_fieldset'][$i]['mapped_class_URI'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 					'#states' => array(
-								'disabled' => array(
+								'readonly' => array(
 								':input[name="relations_fieldset['.$i.'][known_URI]"]' => array('checked' => FALSE),
 									),
 								),
@@ -262,16 +259,17 @@ function mapping_basic($form, &$form_state) {
 					'#type' => 'textfield',
 					'#size' => '10',
 					'#states' => array(
-								'disabled' => array(
+								'readonly' => array(
 								':input[name="relations_fieldset['.$i.'][known_URI]"]' => array('checked' => FALSE),
 									),
 								),
 					);
 				
-				$form['relations_fieldset'][$i]['known_URI'] = array (
-					'#title'=> 'uri\'s known',
-					'#type' => 'checkbox',	
-					);	
+				
+				$form['relations_fieldset'][$i]['labels']['known_uri'] = array (
+		  	  		'#markup' => '<h3> only fill in the uri\'s if they are known </h3>',
+				);
+				
 				
 			}
 			
@@ -289,6 +287,7 @@ function mapping_basic($form, &$form_state) {
 			$form['generate_uri'] = array(
 				'#type' => 'submit',
 				'#submit' => array('mapping_generate_uri'),
+				'#value' => t('generate uri\'s'),
 				'#ajax' => array(
 					'event' => 'change',
 					'callback' => 'mapping_add_more_callback',
@@ -336,6 +335,7 @@ function mapping_basic($form, &$form_state) {
 				'#type' => 'submit',
 				'#value' => ('-5 relations'),
 				'#submit' => array('mapping_remove_five'),
+				'#limit_validation_errors' => array(),
 				'#ajax' => array(
 					'callback' => 'mapping_add_more_callback',
 					'wrapper' => 'relations-fieldset-wrapper',
@@ -355,6 +355,7 @@ function mapping_basic($form, &$form_state) {
 
 
 function mapping_generate_uri($form, &$form_state ){
+	
 	drupal_set_message('testt');
 	echo 'tester';
 	$select1 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist1']];
@@ -390,14 +391,12 @@ function mapping_generate_uri($form, &$form_state ){
 	for($i = 0; $i < $form_state['num_relations']; $i++){
 				
 		if(!empty(trim($form_state['values']['relations_fieldset'][$i]['core_class'])) && empty(trim($form_state['values']['relations_fieldset'][$i]['core_class_URI']))) {
-			$coreclassUri = $root.'mapping/'.$datamodelURI1.'/class/'.$form_state['values']['relations_fieldset'][$i]['core_class'];
-		 
-			unset($form_state['input']['relations_fieldset'][$i]['core_class_URI']);
-			$form['relations_fieldset'][$i]['core_class_URI']['#default_value'] = $coreclassUri;	 
-			$form_state['input']['relations_fieldset'][$i]['core_class_URI'] = $coreclassUri;	 
-			//$form['relations_fieldset'][$i]['core_class_URI']['#value']= $coreclassUri;
+			$coreclassUri = $root.'mapping/'.$datamodelURI1.'/property/'.$form_state['values']['relations_fieldset'][$i]['core_class'];
+			unset($form_state['input']['relations_fieldset'][$i]['core_class_URI']); 
+			$form_state['input']['relations_fieldset'][$i]['core_class_URI'] = $coreclassUri;	
+			
 		}
-		drupal_set_message('uri'.$coreclassUri);
+		
 		if(!empty(trim($form_state['values']['relations_fieldset'][$i]['core_property']))&& empty(trim($form_state['values']['relations_fieldset'][$i]['core_property_URI']))){
 		$corepropertyUri = $root.'mapping/'.$datamodelURI1.'/property/'.$form_state['values']['relations_fieldset'][$i]['core_property'];
 		unset($form_state['input']['relations_fieldset'][$i]['core_property_URI']);
@@ -406,9 +405,8 @@ function mapping_generate_uri($form, &$form_state ){
 		//$form['relations_fieldset'][$i]['core_property_URI']['#value']= $corepropertyUri;
 		}
 	
-		
 		$relation_choice= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']];
-			drupal_set_message($relation_choice);
+	
 			
 		if($relation_choice=='Exact match')
 			$form_state['input']['relations_fieldset'][$i]['relation_URI']='skos:exactMatch';
@@ -475,7 +473,7 @@ function mapping_remove_five($form, &$form_state) {
 }
 	
 function mapping_add_more_callback($form, $form_state) {
-echo 'zes';
+
   return $form['relations_fieldset'];
 }	
 
@@ -548,8 +546,7 @@ function mapping_basic_validate($form, &$form_state){
 function mapping_basic_submit($form, &$form_state) {
 	
 	
-	
-	$select1 = $form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
+		$select1 = $form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
 	$select2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
 	
 	
@@ -574,19 +571,27 @@ function mapping_basic_submit($form, &$form_state) {
 		$datamodel2=$select2;
 		$result2 = db_query('SELECT uri FROM datamodels WHERE name= :datamodel2', array(':datamodel2' => $datamodel2));
 		$datamodelURI2= $result2->fetchField(0);
-		
 	}
 	
 	
  for($i = 0; $i < $form_state['num_relations']; $i++){
  	 
- 	$coreclassuri= $form['relations_fieldset'][$i]['core_class_URI']['#default_value'];
+
  	$coreclass= $form_state['values']['relations_fieldset'][$i]['core_class'];
+ 	$coreclassuri=$form_state['values']['relations_fieldset'][$i]['core_class_URI'];
 	$coreproperty=$form_state['values']['relations_fieldset'][$i]['core_property'];
+	$corepropertyuri=$form_state['values']['relations_fieldset'][$i]['core_property_URI'];
 	$relation= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']];
+	$relationuri= $form_state['values']['relations_fieldset'][$i]['relation_URI'];
 	$mappedclass= $form_state['values']['relations_fieldset'][$i]['mapped_class'];
+	$mappedclassuri= $form_state['values']['relations_fieldset'][$i]['mapped_class_URI'];
 	$mappedproperty= $form_state['values']['relations_fieldset'][$i]['mapped_property'];
-	$synmap= $form_state['values']['relations_fieldset'][$i]['syntax_mapping'];
+	$mappedpropertyuri= $form_state['values']['relations_fieldset'][$i]['mapped_property_URI'];
+	
+	if(!$form_state['values']['relations_fieldset'][$i]['syntax_mapping'])
+		$synmap= 0;
+	else
+		$synmap= $form_state['values']['relations_fieldset'][$i]['syntax_mapping'];
  	 
 	drupal_set_message($relation);
 	db_insert('relations')
@@ -594,17 +599,21 @@ function mapping_basic_submit($form, &$form_state) {
     	
       'did1' => $datamodel1,
       'did2' => $datamodel2,
-      'coreclass' =>$coreclass,
+      'coreclass' =>$coreclass, 
       'coreclassuri' => $coreclassuri,
       'coreproperty' =>$coreproperty,
+      'corepropertyuri' =>$corepropertyuri,
       'relation' =>$relation,
+      'relationuri' =>$relationuri,
       'mappedclass' =>$mappedclass,
+      'mappedclassuri' =>$mappedclassuri,
       'mappedproperty' =>  $mappedproperty,
+      'mappedpropertyuri' =>  $mappedpropertyuri,
       'synmap' =>$synmap,
       ))->execute();
     
    
- }
+ 
     
     if($select1 =="add new") {
     db_insert('datamodels')
@@ -644,30 +653,12 @@ if(easyrdf()){
  		
  		//ispartof
  		
- 		$graph1->add($coreclass, 'http://purl.org/dc/terms/isPartOf', $datamodelURI1);
- 		$graph1->add($mappedclass, 'http://purl.org/dc/terms/isPartOf', $datamodelURI2);
- 		$graph1->add($coreproperty, 'http://purl.org/dc/terms/isPartOf', $coreclass);
- 		$graph1->add($mappedproperty, 'http://purl.org/dc/terms/isPartOf', $mappedclass);
- 		
- 		//relations between properties
- 		switch($relation){
- 		case 'Close match':
- 			$graph1->add($coreproperty, 'http://www.w3.org/2004/02/skos/core#closeMatch', $mappedproperty);
- 			break;
- 		case 'Exact match':
- 			$graph1->add($coreproperty, 'http://www.w3.org/2004/02/skos/core#exactMatch', $mappedproperty);
- 			break;
- 		case 'Narrow match':
- 			$graph1->add($coreproperty, 'http://www.w3.org/2004/02/skos/core#narrowMatch', $mappedproperty);
- 			break;
- 		case 'Broad match':
- 			$graph1->add($coreproperty, 'http://www.w3.org/2004/02/skos/core#broadMatch', $mappedproperty);
- 			break;
- 		case 'Related match':
- 			$graph1->add($coreproperty, 'http://www.w3.org/2004/02/skos/core#relatedMatch', $mappedproperty);
- 			break;
- 		default:
- 		}
+ 		$graph1->add($coreclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI1);
+ 		$graph1->add($mappedclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI2);
+ 		$graph1->add($corepropertyuri, 'http://purl.org/dc/terms/isPartOf', $coreclassuri);
+ 		$graph1->add($mappedpropertyuri, 'http://purl.org/dc/terms/isPartOf', $mappedclassuri);
+ 		$graph1->add($corepropertyuri,$relationuri, $mappedpropertyuri); 		
+ 			
  	$gs->insert($graph1, 'http://cpsv-ap_mapping.eu');
  	
  	$graphuri = new EasyRdf_Sparql_Client('http://localhost:8890/sparql');
@@ -699,6 +690,9 @@ if(easyrdf()){
 	 	
 	}
 }
+}
+
+
 
 function mapping_basic_populate_list(){
 	

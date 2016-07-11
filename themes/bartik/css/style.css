@@ -1646,7 +1646,8 @@ div.admin-panel .description {
 }
 
 .views-table {
-	text-align: center;
+	float:left;
+	text-align: left;
 }
 
 .views-table .even{
@@ -1656,6 +1657,15 @@ div.admin-panel .description {
 	background-color:#C0D7EF;
 }
 
+.views-uri{
+	font-size: 10px;
+	column-width: 150px;
+}
+
+.views-corepropertyuri{
+	font-size: 10px;
+	column-width: 150px;
+}
 .views-table thead{
 	background-color:  #66b3ff;
 }

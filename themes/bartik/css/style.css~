@@ -1650,10 +1650,10 @@ div.admin-panel .description {
 }
 
 .views-table .even{
-	background-color: #80bfff;
+	background-color: #E8E8E8 ;
 }
 .views-table .odd {
-	background-color:#b3d9ff;
+	background-color:#C0D7EF;
 }
 
 .views-table thead{

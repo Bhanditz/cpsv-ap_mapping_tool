@@ -1,0 +1,396 @@
+<?php
+
+
+function editmapping_menu() {
+
+	$items['editmappings'] = array(
+		'title' => 'editmapping',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('editmapping_basic'),
+		'access callback' => TRUE,
+	);
+	
+	return $items;
+	
+	
+}
+
+
+
+function editmapping_basic($form, &$form_state) {
+		  
+	
+	$datamodel_list = editmapping_basic_populate_list();
+	$dropdown_array = editmapping_basic_relations_list();
+	
+	
+	
+	$form['datamodellist1'] = array (
+					'#title' => t('Choose a core datamodel to change the mappings'),
+					'#type' => 'select',
+					'#options' => $datamodel_list,
+					'#default_value' => 'default',
+					
+				);
+	
+	$form['datamodellist2'] = array (
+					'#title' => t('Choose a mapped datamodel to change the relations'),
+					'#type' => 'select',
+					'#options' => $datamodel_list,
+					'#default_value' => 'default',
+				
+				);
+	
+	$form['get_relations'] = array(
+				'#type' => 'submit',
+				'#submit' => array('editmapping_fillfields'),
+				'#value' => t('get relations'),
+				'#ajax' => array(
+					'event' => 'change',
+					'callback' => 'editmapping_add_more_callback',
+					'wrapper' => 'relations-fieldset-wrapper',
+					),
+				);
+	
+	   $form['#attached']['css'] = array(
+		  	  drupal_get_path('module', 'editmapping') . '/editmapping.css',
+		);
+	   
+	   $form['#tree'] = TRUE;
+	   $form['relations_fieldset'] = array(
+	 	 '#type' => 'fieldset',
+	 	 '#title' => t('editmapping relations'),
+	 	 '#prefix' => '<div id="relations-fieldset-wrapper">',
+	 	 '#suffix' => '</div>',
+	 	 );	
+	   
+	   
+	   
+	   	$form['relations_fieldset']['labels']['dummylabelprobnotgoodpractice'] = array (
+		  	  		'#markup' => '<h2> </h2>',
+					);
+		
+		  $form['relations_fieldset']['labels']['core_class_label'] = array (
+		  	  		'#markup' => '<h1>Core Class</h1>',
+					);
+		  
+		  $form['relations_fieldset']['labels']['core_property_label'] = array (
+					'#markup' => '<h1>Core Property</h1>',
+					);
+		  
+		  $form['relations_fieldset']['labels']['relation_label'] = array (
+					'#markup' => '<h1>Relation</h1>',
+					);
+		  
+		  $form['relations_fieldset']['labels']['mapped_class_label'] = array (
+					'#markup' => '<h1>Mapped Class</h1>',
+					);
+		  
+		  $form['relations_fieldset']['labels']['mapped_property_label'] = array (
+					'#markup' => '<h1>Mapped Property</h1>',
+					);
+		  
+		  $form['relations_fieldset']['labels']['mapped_property_label'] = array (
+					'#markup' => '<h1>Mapped Property</h1>',
+					);
+		  
+		  $form['relations_fieldset']['labels']['syntax_editmapping_label'] = array (
+					'#markup' => '<h1>Syntax Mapping</h1>',
+					);
+	
+		  if (empty($form_state['num_relations'])) {
+		  	  $form_state['num_relations'] =0;
+		  }
+		  
+		  for ($i = 0; $i < $form_state['num_relations']; $i++) {
+		  	  
+		  	  $form['relations_fieldset'][$i]['relationship_label'] = array (
+		  	  		'#markup' => '<h2>Relationships:</h2>',
+					);
+
+				$form['relations_fieldset'][$i]['core_class'] = array (
+					'#type' => 'textfield',
+					'#size' => '10',
+/*					'#ajax' => array(
+						'event' => 'change',
+						'callback' => 'editmapping_generate_uri',
+						'wrapper' => 'relations-fieldset-wrapper',
+						'method' => 'replace',
+						),*/
+					);
+				
+				$form['relations_fieldset'][$i]['core_property'] = array (
+					'#type' => 'textfield',
+					'#size' => '10',
+/*						'#ajax' => array(
+						'event' => 'change',
+						'callback' => 'editmapping_generate_uri',
+						'wrapper' => 'relations-fieldset-wrapper',
+						'method' => 'replace',
+						),*/
+					);
+								
+				$form['relations_fieldset'][$i]['relation'] = array (
+					'#type' => 'select',
+					'#options' => $dropdown_array,
+/*						'#ajax' => array(
+						'event' => 'change',
+						'callback' => 'editmapping_generate_uri',
+						'wrapper' => 'relations-fieldset-wrapper',
+						'method' => 'replace',
+						),*/
+					);
+				
+				$form['relations_fieldset'][$i]['mapped_class'] = array (
+					'#type' => 'textfield',
+					'#size' => '10',
+/*						'#ajax' => array(
+						'event' => 'change',
+						'callback' => 'editmapping_generate_uri',
+						'wrapper' => 'relations-fieldset-wrapper',
+						'method' => 'replace',
+						),*/
+					
+					);
+				
+				$form['relations_fieldset'][$i]['mapped_property'] = array (
+					'#type' => 'textfield',
+					'#size' => '10',
+/*						'#ajax' => array(
+						'event' => 'change',
+						'callback' => 'editmapping_generate_uri',
+						'wrapper' => 'relations-fieldset-wrapper',
+						'method' => 'replace',
+						), */
+					);
+				
+				$form['relations_fieldset'][$i]['syntax_mapping'] = array (
+					'#type' => 'checkbox',				
+					);		
+				
+				//URI's if needed 
+				
+				$form['relations_fieldset'][$i]['uri_label'] = array (
+		  	  		'#markup' => '<h2>Uri\'s: </h2>',
+					);
+				
+				
+					$form['relations_fieldset'][$i]['core_class_URI'] = array (
+					'#title_display'=> 'before',
+					'#type' => 'textfield',
+					'#size' => '10',
+					
+					);
+				
+				$form['relations_fieldset'][$i]['core_property_URI'] = array (
+					'#type' => 'textfield',
+					'#size' => '10',
+					
+					);
+								
+				$form['relations_fieldset'][$i]['relation_URI'] = array (
+					'#type' => 'textfield',
+					'#size' => '10',
+					 '#attributes' => array('hidden' => 'hidden'),
+					);
+				
+				$form['relations_fieldset'][$i]['mapped_class_URI'] = array (
+					'#type' => 'textfield',
+					'#size' => '10',
+					
+					);
+				
+				$form['relations_fieldset'][$i]['mapped_property_URI'] = array (
+					'#type' => 'textfield',
+					'#size' => '10',
+					
+					);
+				
+				$form['relations_fieldset'][$i]['labels']['known_uri'] = array (
+		  	  		'#markup' => '<h3> </h3>',
+				);
+				
+			}
+			
+		/*	$form['generate_URI'] = array(
+				'#type' => 'submit',
+				'#value' => t('generate'),
+				'#submit' => array('editmapping_generate_uri'),
+				'#limit_validation_errors' => array(),
+				'#ajax' => array(
+					'callback' => 'editmapping_add_more_callback',
+					'wrapper' => 'relations-fieldset-wrapper',
+					),
+				);*/
+			
+			
+			
+			
+			
+		   $form['submit'] = array(
+			 '#type' => 'submit',
+			 '#value' => t('Submit'),			
+			
+			 );
+		
+	
+	return $form;
+	
+}
+
+
+function editmapping_basic_populate_list(){
+	
+	$databaselist= db_query('SELECT mid,name FROM datamodels') ;
+
+	$options= array();
+   	 	foreach ($databaselist as $item) {
+		  	$key = $item->mid;
+		  	$value = $item->name;
+		  	$options[$key] = $value;
+		  }
+		  
+    return $options;
+}
+
+function editmapping_add_more_callback($form, &$form_state) {
+	return $form['relations_fieldset'];
+}
+
+function editmapping_basic_relations_list() {
+	$voc_name = 'Skos_mappingRelation';
+	$myvoc = taxonomy_vocabulary_machine_name_load($voc_name);
+		  
+	$dropdown_source = taxonomy_get_tree($myvoc->vid);
+	
+	$dropdown_list = array('0' => '---none---');
+		  
+		  foreach ($dropdown_source as $item) {
+		  	  $key = $item->tid;
+		  	  $value = $item->name;
+		  	  $dropdown_list[$key] = $value;
+		  }
+		  
+	return $dropdown_list;
+}
+
+function editmapping_fillfields($form, &$form_state){
+	
+	$datamodel1 =$form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
+	$datamodel2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
+	
+	
+
+	$relations = db_query('SELECT * FROM relations WHERE did1= :datamodel1 AND did2= :datamodel2', array(':datamodel1' => $datamodel1, ':datamodel2' => $datamodel2));
+	$count= $relations->rowCount();
+	$form_state['num_relations']= $count;
+	
+	for($i=0; $i < $count ; $i++) {
+		$row = $relations->fetchObject();
+		
+		$form_state['input']['relations_fieldset'][$i]['core_class'] = $row-> coreclass;
+		$form_state['input']['relations_fieldset'][$i]['core_class_URI'] = $row-> coreclassuri;
+		$form_state['input']['relations_fieldset'][$i]['core_property'] = $row-> coreproperty;
+		$form_state['input']['relations_fieldset'][$i]['core_property_URI'] = $row-> corepropertyuri;
+		
+		if($row->relation == "Close match") 
+			$form_state['input']['relations_fieldset'][$i]['relation'] = 1;
+		if($row->relation == "Exact match") 
+			$form_state['input']['relations_fieldset'][$i]['relation'] = 2;
+		if($row->relation == "Narrow match") 
+			$form_state['input']['relations_fieldset'][$i]['relation'] = 3;
+		if($row->relation == "Related match") 
+			$form_state['input']['relations_fieldset'][$i]['relation'] = 4;
+		if($row->relation == "Broad match") 
+			$form_state['input']['relations_fieldset'][$i]['relation'] = 5;
+		
+		$form_state['input']['relations_fieldset'][$i]['mapped_class'] = $row-> mappedclass;
+		$form_state['input']['relations_fieldset'][$i]['mapped_class_URI'] = $row-> mappedclassuri;
+		$form_state['input']['relations_fieldset'][$i]['mapped_property'] = $row-> mappedproperty;
+		$form_state['input']['relations_fieldset'][$i]['mapped_property_URI'] = $row-> mappedpropertyuri;
+		
+		
+		unset($form_state['input']['relations_fieldset'][$i]['syntax_mapping']);
+		if($row-> synmap == '1') {
+			
+			$form_state['input']['relations_fieldset'][$i]['syntax_mapping'] = TRUE;
+		}
+		else{
+			$form_state['input']['relations_fieldset'][$i]['synmap'] = FALSE;
+		}
+	
+	}
+	
+	$form_state['rebuild']= TRUE;
+		return form_builder('form-wrapper', $form['relations_fieldset'], $form_state);
+	
+}
+
+function editmapping_basic_submit($form, &$form_state) {
+	
+
+	$datamodel1 =$form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
+	$datamodel2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
+	
+	db_query('DELETE FROM relations WHERE did1= :datamodel1 AND did2= :datamodel2', array(':datamodel1' => $datamodel1, ':datamodel2' => $datamodel2));
+  
+	
+	for($i = 0; $i < $form_state['num_relations']; $i++){
+ 	 	 
+
+ 	$coreclass= $form_state['values']['relations_fieldset'][$i]['core_class'];
+ 	$coreclassuri=$form_state['values']['relations_fieldset'][$i]['core_class_URI'];
+	$coreproperty=$form_state['values']['relations_fieldset'][$i]['core_property'];
+	$corepropertyuri=$form_state['values']['relations_fieldset'][$i]['core_property_URI'];
+	$relation= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']];
+	
+	if($relation=='Exact match')
+		$relationuri='skos:exactMatch';
+	if($relation=='Close match')
+		$relationuri='skos:closeMatch';
+	if($relation=='Narrow match')
+		$relationuri='skos:narrowMatch';
+	if($relation=='Broad match')
+		$relationuri='skos:broadMatch';
+	if($relation=='Related match')
+		$relationuri='skos:relatedMatch';
+		
+	$mappedclass= $form_state['values']['relations_fieldset'][$i]['mapped_class'];
+	$mappedclassuri= $form_state['values']['relations_fieldset'][$i]['mapped_class_URI'];
+	$mappedproperty= $form_state['values']['relations_fieldset'][$i]['mapped_property'];
+	$mappedpropertyuri= $form_state['values']['relations_fieldset'][$i]['mapped_property_URI'];
+	$synmap= $form_state['values']['relations_fieldset'][$i]['syntax_mapping'];
+ 	 
+	
+	db_insert('relations')
+    ->fields(array(
+      'did1' => $datamodel1,
+      'did2' => $datamodel2,
+      'coreclass' =>$coreclass, 
+      'coreclassuri' => $coreclassuri,
+      'coreproperty' =>$coreproperty,
+      'corepropertyuri' =>$corepropertyuri,
+      'relation' =>$relation,
+      'relationuri' =>$relationuri,
+      'mappedclass' =>$mappedclass,
+      'mappedclassuri' =>$mappedclassuri,
+      'mappedproperty' =>  $mappedproperty,
+      'mappedpropertyuri' =>  $mappedpropertyuri,
+      'synmap' =>$synmap,
+      ))->execute();
+    
+    	if(easyrdf()){  
+    $endpoint= 'http://localhost:8890/sparql';
+ 	$gs = new EasyRdf_Sparql_Client($endpoint);
+ 	
+ 	
+ 	$gs->update(
+ 		'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+ 			DELETE {<verder> ?p ?o}
+ 			INSERT {<trythis> ?p ?o}
+ 			WHERE {<verder> ?p ?o}'
+		);
+	
+ }
+}
+}
