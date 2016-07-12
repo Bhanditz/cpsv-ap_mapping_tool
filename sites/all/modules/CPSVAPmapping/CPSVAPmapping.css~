@@ -9,6 +9,14 @@
 }
 
 
+#relations-fieldset-wrapper .form-wrapper h3{
+	float: left;
+	width: 100px;
+	font-size: 10px;
+	padding: 20px 10px 0px 10px;
+	margin: 20px 10px 40px 10px; 
+}
+
 
 
 #datamodel-fieldset2 .form-wrapper{

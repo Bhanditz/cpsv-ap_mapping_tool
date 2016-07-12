@@ -8,7 +8,7 @@ function mapping_menu() {
 		'page arguments' => array('mapping_basic'),
 		'access callback' => TRUE,
 	);
-	
+	return $items;
 }
 
 
@@ -265,10 +265,11 @@ function mapping_basic($form, &$form_state) {
 								),
 					);
 				
-				$form['relations_fieldset'][$i]['known_URI'] = array (
-					'#title'=> 'uri\'s known',
-					'#type' => 'checkbox',	
-					);	
+				
+				$form['relations_fieldset'][$i]['labels']['known_uri'] = array (
+		  	  		'#markup' => '<h3> only fill in the uri\'s if they are known </h3>',
+				);
+				
 				
 			}
 			
@@ -586,7 +587,11 @@ function mapping_basic_submit($form, &$form_state) {
 	$mappedclassuri= $form_state['values']['relations_fieldset'][$i]['mapped_class_URI'];
 	$mappedproperty= $form_state['values']['relations_fieldset'][$i]['mapped_property'];
 	$mappedpropertyuri= $form_state['values']['relations_fieldset'][$i]['mapped_property_URI'];
-	$synmap= $form_state['values']['relations_fieldset'][$i]['syntax_mapping'];
+	
+	if(!$form_state['values']['relations_fieldset'][$i]['syntax_mapping'])
+		$synmap= 0;
+	else
+		$synmap= $form_state['values']['relations_fieldset'][$i]['syntax_mapping'];
  	 
 	drupal_set_message($relation);
 	db_insert('relations')
@@ -608,7 +613,7 @@ function mapping_basic_submit($form, &$form_state) {
       ))->execute();
     
    
- }
+ 
     
     if($select1 =="add new") {
     db_insert('datamodels')
@@ -648,30 +653,12 @@ if(easyrdf()){
  		
  		//ispartof
  		
- 		$graph1->add($coreclass, 'http://purl.org/dc/terms/isPartOf', $datamodelURI1);
- 		$graph1->add($mappedclass, 'http://purl.org/dc/terms/isPartOf', $datamodelURI2);
- 		$graph1->add($coreproperty, 'http://purl.org/dc/terms/isPartOf', $coreclass);
- 		$graph1->add($mappedproperty, 'http://purl.org/dc/terms/isPartOf', $mappedclass);
- 		
- 		//relations between properties
- 		switch($relation){
- 		case 'Close match':
- 			$graph1->add($coreproperty, 'http://www.w3.org/2004/02/skos/core#closeMatch', $mappedproperty);
- 			break;
- 		case 'Exact match':
- 			$graph1->add($coreproperty, 'http://www.w3.org/2004/02/skos/core#exactMatch', $mappedproperty);
- 			break;
- 		case 'Narrow match':
- 			$graph1->add($coreproperty, 'http://www.w3.org/2004/02/skos/core#narrowMatch', $mappedproperty);
- 			break;
- 		case 'Broad match':
- 			$graph1->add($coreproperty, 'http://www.w3.org/2004/02/skos/core#broadMatch', $mappedproperty);
- 			break;
- 		case 'Related match':
- 			$graph1->add($coreproperty, 'http://www.w3.org/2004/02/skos/core#relatedMatch', $mappedproperty);
- 			break;
- 		default:
- 		}
+ 		$graph1->add($coreclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI1);
+ 		$graph1->add($mappedclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI2);
+ 		$graph1->add($corepropertyuri, 'http://purl.org/dc/terms/isPartOf', $coreclassuri);
+ 		$graph1->add($mappedpropertyuri, 'http://purl.org/dc/terms/isPartOf', $mappedclassuri);
+ 		$graph1->add($corepropertyuri,$relationuri, $mappedpropertyuri); 		
+ 			
  	$gs->insert($graph1, 'http://cpsv-ap_mapping.eu');
  	
  	$graphuri = new EasyRdf_Sparql_Client('http://localhost:8890/sparql');
@@ -702,6 +689,7 @@ if(easyrdf()){
 	  fclose($fp);
 	 	
 	}
+}
 }
 
 

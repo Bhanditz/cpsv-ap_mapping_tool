@@ -25,6 +25,13 @@
 }
 
 
+#relations-fieldset-wrapper .form-wrapper div.style1{
+	width: 1000px;
+	margin: 10px 0px 10px 0px;
+	float: left;
+	border-top: 1px solid #8c8b8b;
+}
+
 #relations-fieldset-wrapper .form-wrapper h1{
 	float: left;
 	width: 110px;

@@ -269,6 +269,10 @@ function mapping_basic($form, &$form_state) {
 				$form['relations_fieldset'][$i]['labels']['known_uri'] = array (
 		  	  		'#markup' => '<h3> only fill in the uri\'s if they are known </h3>',
 				);
+					
+				$form['relations_fieldset'][$i]['line'] = array (
+		  	  		'#markup' => '<div class="style1"></div>',
+				);
 				
 				
 			}
@@ -329,6 +333,7 @@ function mapping_basic($form, &$form_state) {
 					'wrapper' => 'relations-fieldset-wrapper',
 					
 					),
+			
 				);
 			
 			$form['remove_five_relations'] = array(
@@ -344,7 +349,9 @@ function mapping_basic($form, &$form_state) {
   	  	  	
 		   $form['submit'] = array(
 			 '#type' => 'submit',
-			 '#value' => t('Submit'),			
+			 '#value' => t('Submit'),	
+			 '#attributes' => array('onclick' => 'if(!confirm("are you sure you want to submit the mapping?")){return false;}')
+			
 			
 			 );
 		
@@ -356,13 +363,9 @@ function mapping_basic($form, &$form_state) {
 
 function mapping_generate_uri($form, &$form_state ){
 	
-	drupal_set_message('testt');
-	echo 'tester';
 	$select1 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist1']];
 	$select2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
-	echo 'twee';
-	drupal_set_message('working');
-		
+
 	if($select1== "add new") {
 		$datamodel1=$form_state['values']['wrapper_datamodels']['datamodel_fieldset1']['datamodel1'];
 		$datamodelURI1= $form_state['values']['wrapper_datamodels']['datamodel_fieldset1']['URI1'];
@@ -391,17 +394,16 @@ function mapping_generate_uri($form, &$form_state ){
 	for($i = 0; $i < $form_state['num_relations']; $i++){
 				
 		if(!empty(trim($form_state['values']['relations_fieldset'][$i]['core_class'])) && empty(trim($form_state['values']['relations_fieldset'][$i]['core_class_URI']))) {
-			$coreclassUri = $root.'mapping/'.$datamodelURI1.'/property/'.$form_state['values']['relations_fieldset'][$i]['core_class'];
+			$coreclassUri = $root.'mapping/'.$datamodelURI1.'/class/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['core_class']);
 			unset($form_state['input']['relations_fieldset'][$i]['core_class_URI']); 
 			$form_state['input']['relations_fieldset'][$i]['core_class_URI'] = $coreclassUri;	
 			
 		}
 		
 		if(!empty(trim($form_state['values']['relations_fieldset'][$i]['core_property']))&& empty(trim($form_state['values']['relations_fieldset'][$i]['core_property_URI']))){
-		$corepropertyUri = $root.'mapping/'.$datamodelURI1.'/property/'.$form_state['values']['relations_fieldset'][$i]['core_property'];
+		$corepropertyUri = $root.'mapping/'.$datamodelURI1.'/property/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['core_property']);
 		unset($form_state['input']['relations_fieldset'][$i]['core_property_URI']);
-		$form['test2']['#default_value'] = $coreclassUri;	 
-		$form_state['input']['relations_fieldset'][$i]['core_property_URI'] = $coreclassUri;	 
+		$form_state['input']['relations_fieldset'][$i]['core_property_URI'] = $corepropertyUri;	 
 		//$form['relations_fieldset'][$i]['core_property_URI']['#value']= $corepropertyUri;
 		}
 	
@@ -422,26 +424,22 @@ function mapping_generate_uri($form, &$form_state ){
 	
 		
 		if(!empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_class']))&& empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_class_URI']))){
-		$mappedclassUri = $root.'mapping/'.$datamodelURI2.'/class/'.$form_state['values']['relations_fieldset'][$i]['mapped_class'];
-		unset($form_state['input']['relations_fieldset'][$i]['mapped_class_URI']);
-		$form['test2']['#default_value'] = $coreclassUri;	 
-		$form_state['input']['relations_fieldset'][$i]['mapped_class_URI'] = $coreclassUri;	
+		$mappedclassUri = $root.'mapping/'.$datamodelURI2.'/class/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['mapped_class']);
+		unset($form_state['input']['relations_fieldset'][$i]['mapped_class_URI']); 
+		$form_state['input']['relations_fieldset'][$i]['mapped_class_URI'] = $mappedclassUri;	
 		//$form['relations_fieldset'][$i]['mapped_class_URI']['#value']= $mappedclassUri;
 		}
 		
 		if(!empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_property']))&& empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_property_URI']))) {
-		$mappedpropertyUri = $root.'mapping/'.$datamodelURI2.'/property/'.$form_state['values']['relations_fieldset'][$i]['mapped_property'];
+		$mappedpropertyUri = $root.'mapping/'.$datamodelURI2.'/property/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['mapped_property']);
 		unset($form_state['input']['relations_fieldset'][$i]['mapped_property_URI']);
-		$form['test2']['#default_value'] = $coreclassUri;	 
-		$form_state['input']['relations_fieldset'][$i]['mapped_property_URI'] = $coreclassUri;	
+		$form_state['input']['relations_fieldset'][$i]['mapped_property_URI'] = $mappedpropertyUri;	
 		//$form['relations_fieldset'][$i]['mapped_property_URI']['#value']= $mappedpropertyUri;
 		}			
 	
 	}
-		echo 'vier';
 	$form_state['rebuild']= TRUE;
-	echo 'vijf';
-	
+		
 	return form_builder('form-wrapper', $form['relations_fieldset'], $form_state);
 }
 
@@ -637,27 +635,27 @@ if(easyrdf()){
  		$graph1 = new EasyRdf_Graph('http://cpsv-ap_mapping.eu');
  		
  		//datamodel definition
- 		$graph1->add('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
- 		$graph1->add('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2004/02/skos/core#Concept');
+ 		$graph1->addResource('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
+ 		$graph1->addResource('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2004/02/skos/core#Concept');
  		$graph1->add('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/2000/01/rdf-schema#label', "Core Data Model");
  		$graph1->add('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', "reusable data models that are defined, managed, promoted and maintained centrally to facilitate interoperability across different systems, applications and domains"
 );
  		
  		//datamodel, classes & properties
- 		$graph1->add($datamodelURI1, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://mapping.semic.eu/def#DataModel');
- 		$graph1->add($datamodelURI2, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://mapping.semic.eu/def#DataModel');
- 		$graph1->add($coreproperty, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property');
- 		$graph1->add($mappedproperty, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property');
- 		$graph1->add($coreclass, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
- 		$graph1->add($mappedclass, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
+ 		$graph1->addResource($datamodelURI1, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://mapping.semic.eu/def#DataModel');
+ 		$graph1->addResource($datamodelURI2, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://mapping.semic.eu/def#DataModel');
+ 		$graph1->addResource($corepropertyuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property');
+ 		$graph1->addResource($mappedpropertyuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property');
+ 		$graph1->addResource($coreclassuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
+ 		$graph1->addResource($mappedclassuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
  		
  		//ispartof
  		
- 		$graph1->add($coreclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI1);
- 		$graph1->add($mappedclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI2);
- 		$graph1->add($corepropertyuri, 'http://purl.org/dc/terms/isPartOf', $coreclassuri);
- 		$graph1->add($mappedpropertyuri, 'http://purl.org/dc/terms/isPartOf', $mappedclassuri);
- 		$graph1->add($corepropertyuri,$relationuri, $mappedpropertyuri); 		
+ 		$graph1->addResource($coreclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI1);
+ 		$graph1->addResource($mappedclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI2);
+ 		$graph1->addResource($corepropertyuri, 'http://purl.org/dc/terms/isPartOf', $coreclassuri);
+ 		$graph1->addResource($mappedpropertyuri, 'http://purl.org/dc/terms/isPartOf', $mappedclassuri);
+ 		$graph1->addResource($corepropertyuri,$relationuri, $mappedpropertyuri); 		
  			
  	$gs->insert($graph1, 'http://cpsv-ap_mapping.eu');
  	

@@ -43,13 +43,21 @@
 
 
 #relations-fieldset-wrapper .form-wrapper h2{
-	float: left;
+	display:left;
 	width: 110px;
 	padding: 20px 10px 0px 10px;
 	font-size: 12px;
 	font-weight: bold;
 	text-align: left;
 	margin: 10px 10px 0px 10px; 
+}
+
+#relations-fieldset-wrapper .form-wrapper h3{
+	float: left;
+	width: 100px;
+	font-size: 20px;
+	padding: 20px 10px 0px 10px;
+	margin: 20px 10px 40px 10px; 
 }
 #relations-fieldset-wrapper .form-wrapper .form-item.form-type-textfield{ 
 	float:left;
@@ -78,4 +86,8 @@
 #relations-fieldset-wrapper {
 	width:1080px;
 	float: left;
+}
+
+.form-item.form-type-value{
+	background-color: green;
 }

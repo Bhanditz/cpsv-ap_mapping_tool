@@ -16,7 +16,6 @@ function editmapping_menu() {
 }
 
 
-
 function editmapping_basic($form, &$form_state) {
 		  
 	
@@ -207,8 +206,15 @@ function editmapping_basic($form, &$form_state) {
 					);
 				
 				$form['relations_fieldset'][$i]['labels']['known_uri'] = array (
-		  	  		'#markup' => '<h3> </h3>',
+		  	  		'#type' => 'checkbox',
+		  	  		'#title' => t('delete mapping'),
 				);
+				
+				$form['relations_fieldset'][$i]['line'] = array (
+		  	  		'#markup' => '<div class="style1"></div>',
+				);
+				
+			
 				
 			}
 			
@@ -225,11 +231,10 @@ function editmapping_basic($form, &$form_state) {
 			
 			
 			
-			
-			
 		   $form['submit'] = array(
 			 '#type' => 'submit',
-			 '#value' => t('Submit'),			
+			 '#value' => t('Submit'),	
+			 '#attributes' => array('onclick' => 'if(!confirm("are you sure you want to submit these changes?")){return false;}')
 			
 			 );
 		
@@ -274,11 +279,14 @@ function editmapping_basic_relations_list() {
 	return $dropdown_list;
 }
 
+
+	
+
 function editmapping_fillfields($form, &$form_state){
 	
 	$datamodel1 =$form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
 	$datamodel2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
-	
+	$allrelations = array();
 	
 
 	$relations = db_query('SELECT * FROM relations WHERE did1= :datamodel1 AND did2= :datamodel2', array(':datamodel1' => $datamodel1, ':datamodel2' => $datamodel2));
@@ -319,8 +327,22 @@ function editmapping_fillfields($form, &$form_state){
 			$form_state['input']['relations_fieldset'][$i]['synmap'] = FALSE;
 		}
 	
+		$relationsrow = array ( 'coreclassuri' => $row-> coreclassuri,
+			'corepropertyuri' => $row-> corepropertyuri,
+			'relationuri' =>$row->relationuri,
+			'mappedclassuri' =>$row-> mappedclassuri,
+			'mappedpropertyuri' =>$row->mappedpropertyuri
+			);
+		
+		
+		
+		$allrelations[] =$relationsrow;
+		
 	}
 	
+	
+	$_SESSION['allrelations'] = $allrelations;
+		
 	$form_state['rebuild']= TRUE;
 		return form_builder('form-wrapper', $form['relations_fieldset'], $form_state);
 	
@@ -335,9 +357,14 @@ function editmapping_basic_submit($form, &$form_state) {
 	db_query('DELETE FROM relations WHERE did1= :datamodel1 AND did2= :datamodel2', array(':datamodel1' => $datamodel1, ':datamodel2' => $datamodel2));
   
 	
+ 	$data =$_SESSION['allrelations'];
+ 	
+ 	
+ 		
+	
 	for($i = 0; $i < $form_state['num_relations']; $i++){
- 	 	 
-
+ 
+		
  	$coreclass= $form_state['values']['relations_fieldset'][$i]['core_class'];
  	$coreclassuri=$form_state['values']['relations_fieldset'][$i]['core_class_URI'];
 	$coreproperty=$form_state['values']['relations_fieldset'][$i]['core_property'];
@@ -379,17 +406,141 @@ function editmapping_basic_submit($form, &$form_state) {
       'synmap' =>$synmap,
       ))->execute();
     
-    	if(easyrdf()){  
+    
+  	if(easyrdf()){  
     $endpoint= 'http://localhost:8890/sparql';
  	$gs = new EasyRdf_Sparql_Client($endpoint);
  	
  	
- 	$gs->update(
- 		'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
- 			DELETE {<verder> ?p ?o}
- 			INSERT {<trythis> ?p ?o}
- 			WHERE {<verder> ?p ?o}'
-		);
+ 	if($data[$i]['coreclassuri'] != $coreclassuri){
+ 		$oldvalue = $data[$i]['coreclassuri'];
+ 		
+ 		$gs->update(
+			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				DELETE {<'.$oldvalue.'> ?p ?o}
+				INSERT {<'.$coreclassuri.'> ?p ?o}
+				WHERE {<'.$oldvalue.'> ?p ?o}'
+			);
+		
+		$gs->update(
+			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				DELETE {?s <'.$oldvalue.'>  ?o}
+				INSERT {?s <'.$coreclassuri.'>  ?o}
+				WHERE {?s <'.$oldvalue.'>  ?o}'
+			);
+		
+		$gs->update(
+			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				DELETE {?s ?p <'.$oldvalue.'>}
+				INSERT {?s ?p <'.$coreclassuri.'>}
+				WHERE {?s ?p <'.$oldvalue.'>}'
+			);
+ 	}
+ 	
+ 	if($data[$i]['corepropertyuri'] != $corepropertyuri){
+ 		$oldvalue = $data[$i]['corepropertyuri'];
+ 		
+ 		$gs->update(
+			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				DELETE {<'.$oldvalue.'> ?p ?o}
+				INSERT {<'.$corepropertyuri.'> ?p ?o}
+				WHERE {<'.$oldvalue.'> ?p ?o}'
+			);
+		
+		$gs->update(
+			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				DELETE {?s <'.$oldvalue.'>  ?o}
+				INSERT {?s <'.$corepropertyuri.'>  ?o}
+				WHERE {?s <'.$oldvalue.'>  ?o}'
+			);
+		
+		$gs->update(
+			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				DELETE {?s ?p <'.$oldvalue.'>}
+				INSERT {?s ?p <'.$corepropertyuri.'>}
+				WHERE {?s ?p <'.$oldvalue.'>}'
+			);
+ 	}
+ 	
+ 	if($data[$i]['relationuri'] != $relationuri){
+ 		$oldvalue = $data[$i]['relationuri'];
+ 		
+ 		$gs->update(
+			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				DELETE {<'.$oldvalue.'> ?p ?o}
+				INSERT {<'.$relationuri.'> ?p ?o}
+				WHERE {<'.$oldvalue.'> ?p ?o}'
+			);
+		
+		$gs->update(
+			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				DELETE {?s <'.$oldvalue.'>  ?o}
+				INSERT {?s <'.$relationuri.'>  ?o}
+				WHERE {?s <'.$oldvalue.'>  ?o}'
+			);
+		
+		$gs->update(
+			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				DELETE {?s ?p <'.$oldvalue.'>}
+				INSERT {?s ?p <'.$relationuri.'>}
+				WHERE {?s ?p <'.$oldvalue.'>}'
+			);
+ 	}
+ 	
+ 	if($data[$i]['mappedclassuri'] != $mappedclassuri){
+ 		$oldvalue = $data[$i]['mappedclassuri'];
+ 		
+ 		$gs->update(
+			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				DELETE {<'.$oldvalue.'> ?p ?o}
+				INSERT {<'.$mappedclassuri.'> ?p ?o}
+				WHERE {<'.$oldvalue.'> ?p ?o}'
+			);
+		
+		$gs->update(
+			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				DELETE {?s <'.$oldvalue.'>  ?o}
+				INSERT {?s <'.$mappedclassuri.'>  ?o}
+				WHERE {?s <'.$oldvalue.'>  ?o}'
+			);
+		
+		$gs->update(
+			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				DELETE {?s ?p <'.$oldvalue.'>}
+				INSERT {?s ?p <'.$mappedclassuri.'>}
+				WHERE {?s ?p <'.$oldvalue.'>}'
+			);
+ 	}
+ 	
+ 	if($data[$i]['mappedpropertyuri'] != $mappedpropertyuri){
+ 		$oldvalue = $data[$i]['mappedpropertyuri'];
+ 		
+ 		$gs->update(
+			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				DELETE {<'.$oldvalue.'> ?p ?o}
+				INSERT {<'.$mappedpropertyuri.'> ?p ?o}
+				WHERE {<'.$oldvalue.'> ?p ?o}'
+			);
+		
+		$gs->update(
+			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				DELETE {?s <'.$oldvalue.'>  ?o}
+				INSERT {?s <'.$mappedpropertyuri.'>  ?o}
+				WHERE {?s <'.$oldvalue.'>  ?o}'
+			);
+		
+		$gs->update(
+			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				DELETE {?s ?p <'.$oldvalue.'>}
+				INSERT {?s ?p <'.$mappedpropertyuri.'>}
+				WHERE {?s ?p <'.$oldvalue.'>}'
+			);
+ 	}
+ 	
+ 	drupal_set_message('relations saved');
+ 	
+ 	
+		
 	
  }
 }

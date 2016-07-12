@@ -209,10 +209,11 @@ function CPSVAPmapping_basic($form, &$form_state) {
 								),
 					);
 				
-				$form['relations_fieldset'][$i]['known_URI'] = array (
-					'#title'=> 'uri\'s known',
-					'#type' => 'checkbox',	
-					);	
+					
+				$form['relations_fieldset'][$i]['labels']['known_uri'] = array (
+		  	  		'#markup' => '<h3> only fill in the uri\'s if they are known </h3>',
+				);
+				
 				
 			}
 			
