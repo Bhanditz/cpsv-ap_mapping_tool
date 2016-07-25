@@ -266,7 +266,7 @@ function mapping_basic($form, &$form_state) {
 					);
 				
 				
-				$form['relations_fieldset'][$i]['labels']['known_uri'] = array (
+				$form['relations_fieldset'][$i]['known_uri'] = array (
 		  	  		'#markup' => '<h3> only fill in the uri\'s if they are known </h3>',
 				);
 					
@@ -690,8 +690,6 @@ if(easyrdf()){
 }
 }
 
-
-
 function mapping_basic_populate_list(){
 	
 	$databaselist= db_query('SELECT mid,name FROM datamodels') ;
@@ -713,7 +711,7 @@ function mapping_basic_relations_list() {
 	$dropdown_source = taxonomy_get_tree($myvoc->vid);
 	
 	$dropdown_list = array('0' => '---none---');
-		  
+		                                                          
 		  foreach ($dropdown_source as $item) {
 		  	  $key = $item->tid;
 		  	  $value = $item->name;
