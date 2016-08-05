@@ -621,6 +621,19 @@ function CPSVAPmapping_get_class_chosen() {
       t('Business Event'),
       t('Input'),
       t('Agent'),
+      t('Person'),
+      t('Period Of Time'),
+      t('Formal Framework'),
+      t('Public Organisation'),
+      t('Channel'),
+      t('Cost'),
+      t('Location'),
+      t('Formal Organisation'),
+      t('Legal Entity'),
+      t('Output'),
+      t('Addres'),
+         
+      
     )
   );
  }
@@ -637,6 +650,7 @@ function CPSVAPmapping_get_properties_dropdown_options($key = '') {
         t('Processing Time'),
         t('Sector'),
         t('Type'),
+        
       )
     ),
     t('Business Event') => drupal_map_assoc(
@@ -665,7 +679,86 @@ function CPSVAPmapping_get_properties_dropdown_options($key = '') {
         t('Type'),
       )
     ),
-  );
+    t('Person') => drupal_map_assoc(
+      array()
+      ),
+    t('Period Of Time') => drupal_map_assoc(
+      array(
+        t('Identifier'),
+        t('Start date/time'),
+        t('End date/time'),
+        )
+      ),
+    t('Formal Framework') => drupal_map_assoc(
+      array(
+        t('Name'),
+        t('Description'),
+        t('Identifier'),
+        t('Status'),
+        t('Language'),
+        t('Subject Code'),
+        t('Territorial Application Code'),
+        t('Type'),
+        )
+      ), 
+    t('Public Organisation') => drupal_map_assoc(
+      array(
+        t('Type'),
+        )
+      ), 
+    t('Channel') => drupal_map_assoc(
+      array(
+        t('Identifier'),
+        t('Type'),
+        )
+      ), 
+    t('Cost') => drupal_map_assoc(
+      array(
+        t('Name'),
+        t('Description'),
+        t('Value'),
+        t('Currency'),)
+      ), 
+    t('Location') => drupal_map_assoc(
+      array()
+      ), 
+    t('Formal Organisation') => drupal_map_assoc(
+      array(
+        t('Administrative level'),
+        t('Alternative name'),
+        t('Type'),
+        t('Homepage')
+        )
+      ), 
+    t('Legal Entity') => drupal_map_assoc(
+      array()
+      ), 
+    t('Output') => drupal_map_assoc(
+      array(
+        t('Identifier'),
+        t('Name'),
+        t('Description'),
+        t('Type'),
+        )
+      ), 
+    t('Addres') => drupal_map_assoc(
+      array(
+        t('Full Address'),
+        t('Address ID'),
+        t('Address Area'),
+        t('Admin Unit L1'),
+        t('Admin Unit L2'),
+        t('Locator Designator'),
+        t('Locator Name'),
+        t('PO Box'),
+        t('PO Code'),
+        t('PO Name'),
+        t('Thoroughfare'),
+        
+        )
+      ),
+);
+    
   if (isset($options[$key])) {
     return $options[$key];
   }

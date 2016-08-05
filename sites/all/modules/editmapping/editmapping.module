@@ -5,7 +5,7 @@ require 'vendor/autoload.php';
 function editmapping_menu() {
 
 	$items['editmappings'] = array(
-		'title' => 'editmapping',
+		'title' => 'edit and export mappings',
 		'page callback' => 'drupal_get_form',
 		'page arguments' => array('editmapping_basic'),
 		'access callback' => TRUE,
@@ -221,7 +221,7 @@ function editmapping_basic($form, &$form_state) {
 				
 				$form['relations_fieldset'][$i]['labels']['deletemapping'] = array (
 		  	  		'#type' => 'checkbox',
-		  	  		'#title' => t('delete mapping'),
+		  	  		'#title' => t('delete relation'),
 				);
 				
 				$form['relations_fieldset'][$i]['line'] = array (
@@ -375,15 +375,17 @@ function editmapping_exportfields($form, &$form_state) {
  	$result= $gs->query('CONSTRUCT {?s ?p ?o} WHERE { GRAPH <http://cpsv-ap_mapping.eu> {?s ?p ?o}}');
 
  	drupal_set_message($result->dump());
- 	
+ 	$dir = getcwd();
  	$serialized= $result->serialise('rdfxml');
  	
  	drupal_set_message($serialized);
  	$array= $result->resources();
  	
- 	$myfile = fopen("mappings.txt", "w");
- 	fwrite($myfile, $serialized);
- 	fclose($myfile);
+ 	
+ 	$exportfile= $dir."sites/mappings.rdf";
+ 	$fh = fopen($exportfile, "w");
+ 	fwrite($fh, $serialized);
+ 	fclose($fh);
  	
  	/*foreach($array as $row){
  		drupal_set_message('ok');

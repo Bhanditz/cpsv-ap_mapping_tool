@@ -508,12 +508,12 @@ function mapping_basic_validate($form, &$form_state){
   }
 
 	for($i = 0; $i < $form_state['num_relations']; $i++){
- 	 if(empty(trim($form_state['values']['relations_fieldset'][$i]['core_class']))) {
+ 	 if(!empty(trim($form_state['values']['relations_fieldset'][$i]['core_property'])) && !empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_class'])) &&empty(trim($form_state['values']['relations_fieldset'][$i]['core_class']))) {
  	 	 form_set_error('postal', t('The Core class is required.'));
  	 	 $foo= TRUE;
  	}
  	
- 	if(empty(trim($form_state['values']['relations_fieldset'][$i]['core_property']))) {
+ 	if(!empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_property'])) && empty(trim($form_state['values']['relations_fieldset'][$i]['core_property']))) {
  	 	 form_set_error('postal', t('The Core property is required.'));
  	 	 $foo= TRUE;
  	}
@@ -523,12 +523,12 @@ function mapping_basic_validate($form, &$form_state){
  	 	 $foo= TRUE;
  	}
  	
- 	if(empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_class']))) {
+ 	if(!empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_property'])) && empty(trim($form_state['values']['relations_fieldset'][$i]['core_class'])) && empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_class']))) {
  	 	 form_set_error('postal', t('The mapped class is required.'));
  	 	 $foo= TRUE;
  	}
  	
- 	if(empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_property']))) {
+ 	if(!empty(trim($form_state['values']['relations_fieldset'][$i]['core_property'])) && empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_property']))) {
  	 	 form_set_error('postal', t('The mapped property is required.'));
  	 	 $foo= TRUE;
  	
@@ -659,36 +659,12 @@ if(easyrdf()){
  			
  	$gs->insert($graph1, 'http://cpsv-ap_mapping.eu');
  	
- 	$graphuri = new EasyRdf_Sparql_Client('http://localhost:8890/sparql');
- 
  	
- 	$data = $graphuri->query(
- 	'SELECT *
- 		FROM <http://cpsv-ap_mapping.eu>
- 		WHERE {?s ?o <http://mapping.semic.eu/def#DataModel>}
- 		
- 		
- 		'
- 		
- 	);
- 	
- 	$dataarray= $data->dump('html');
- 	
-		
- 		$temp = drupal_realpath('public://');
- 		drupal_set_message($temp);
-	  // On Windows, tempnam() requires an absolute path, so we use realpath().
-	  $file = tempnam(realpath($temp), 'file');
-	  if (!$fp = fopen($file, 'wb')) {
-		drupal_set_message(t('The file could not be created.'), 'error');
-		return 0;
-	  }
-	  fwrite($fp, $data);
-	  fclose($fp);
 	 	
 	}
+ }
 }
-}
+
 
 function mapping_basic_populate_list(){
 	
