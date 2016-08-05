@@ -508,7 +508,8 @@ function CPSVAPmapping_basic_submit($form, &$form_state) {
  	drupal_set_message("CPSV-AP Mapping has been submitted");	
  
  	if(easyrdf()){
-		$endpoint= 'http://localhost:8890/sparql';
+ 		//the $endpoint should point to the correct address
+		$endpoint= 'SparqlEndpoint';
  		$gs = new EasyRdf_Sparql_Client($endpoint);
  		$graph1 = new EasyRdf_Graph('http://cpsv-ap_mapping.eu');
  		

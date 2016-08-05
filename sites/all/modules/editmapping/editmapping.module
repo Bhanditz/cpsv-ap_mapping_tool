@@ -367,39 +367,24 @@ function editmapping_exportfields($form, &$form_state) {
 	if(easyrdf()){  
 		
 	$graph = new EasyRdf_Graph('test');
-	
-	$endpoint= 'http://localhost:8890/sparql';
+
+	//the $endpoint should point to the correct address
+	$endpoint= 'sparqlEndpoint';
  	$gs = new EasyRdf_Sparql_Client($endpoint);
- 	$graphstore= new EasyRdf_GraphStore('http://cpsv-ap_mapping.eu');
  	
  	$result= $gs->query('CONSTRUCT {?s ?p ?o} WHERE { GRAPH <http://cpsv-ap_mapping.eu> {?s ?p ?o}}');
 
- 	drupal_set_message($result->dump());
  	$dir = getcwd();
  	$serialized= $result->serialise('rdfxml');
  	
- 	drupal_set_message($serialized);
  	$array= $result->resources();
- 	
  	
  	$exportfile= $dir."sites/mappings.rdf";
  	$fh = fopen($exportfile, "w");
  	fwrite($fh, $serialized);
- 	fclose($fh);
- 	
- 	/*foreach($array as $row){
- 		drupal_set_message('ok');
- 		drupal_set_message('test:'.$row);
- 	}*/
- 	
- 	
- 	
- 	
+ 	fclose($fh);	
  	
  	}
- 	
- 	
- 	
 }
 	
 
@@ -464,9 +449,10 @@ function editmapping_basic_submit($form, &$form_state) {
     }
     
   	if(easyrdf()){  
-    $endpoint= 'http://localhost:8890/sparql';
- 	$gs = new EasyRdf_Sparql_Client($endpoint);
- 	
+  	//the $endpoint should point to the correct address
+		$endpoint= 'SparqlEndpoint';
+		$gs = new EasyRdf_Sparql_Client($endpoint);
+		
  	
  	if($data[$i]['coreclassuri'] != $coreclassuri){
  		$oldvalue = $data[$i]['coreclassuri'];

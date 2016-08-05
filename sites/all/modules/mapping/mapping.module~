@@ -659,32 +659,7 @@ if(easyrdf()){
  			
  	$gs->insert($graph1, 'http://cpsv-ap_mapping.eu');
  	
- 	$graphuri = new EasyRdf_Sparql_Client('http://localhost:8890/sparql');
- 
  	
- 	$data = $graphuri->query(
- 	'SELECT *
- 		FROM <http://cpsv-ap_mapping.eu>
- 		WHERE {?s ?o <http://mapping.semic.eu/def#DataModel>}
- 		
- 		
- 		'
- 		
- 	);
- 	
- 	$dataarray= $data->dump('html');
- 	
-		
- 		$temp = drupal_realpath('public://');
- 		drupal_set_message($temp);
-	  // On Windows, tempnam() requires an absolute path, so we use realpath().
-	  $file = tempnam(realpath($temp), 'file');
-	  if (!$fp = fopen($file, 'wb')) {
-		drupal_set_message(t('The file could not be created.'), 'error');
-		return 0;
-	  }
-	  fwrite($fp, $data);
-	  fclose($fp);
 	 	
 	}
  }

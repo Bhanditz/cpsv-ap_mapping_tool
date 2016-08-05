@@ -610,9 +610,6 @@ function mapping_basic_submit($form, &$form_state) {
       'synmap' =>$synmap,
       ))->execute();
     
-   
- 
-    
     if($select1 =="add new") {
     db_insert('datamodels')
     ->fields(array(
@@ -630,7 +627,8 @@ function mapping_basic_submit($form, &$form_state) {
     }
       
 if(easyrdf()){
-		$endpoint= 'http://localhost:8890/sparql';
+		//the $endpoint should point to the correct address
+		$endpoint= 'SparqlEndpoint';
  		$gs = new EasyRdf_Sparql_Client($endpoint);
  		$graph1 = new EasyRdf_Graph('http://cpsv-ap_mapping.eu');
  		
