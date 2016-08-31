@@ -517,7 +517,7 @@ function CPSVAPmapping_basic_submit($form, &$form_state) {
  
  	if(easyrdf()){
  		//the $endpoint should point to the correct address
-		$endpoint= 'SparqlEndpoint';
+		$endpoint= 'http://52.50.205.146/sparql';
  		$gs = new EasyRdf_Sparql_Client($endpoint);
  		$graph1 = new EasyRdf_Graph('http://cpsv-ap_mapping.eu');
  		
