@@ -570,7 +570,7 @@ function mapping_basic_validate($form, &$form_state){
 function mapping_basic_submit($form, &$form_state) {
 	
 	
-		$select1 = $form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
+	$select1 = $form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
 	$select2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
 	
 	

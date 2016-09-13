@@ -145,6 +145,8 @@ function editmapping_basic($form, &$form_state) {
 								
 				$form['relations_fieldset'][$i]['relation'] = array (
 					'#type' => 'select',
+					 '#prefix'=> '<div class="editselect">',
+					 '#suffix' => '</div>',
 					'#options' => $dropdown_array,
 /*						'#ajax' => array(
 						'event' => 'change',
@@ -202,9 +204,11 @@ function editmapping_basic($form, &$form_state) {
 					);
 								
 				$form['relations_fieldset'][$i]['relation_URI'] = array (
-					'#type' => 'textfield',
+					'#type' => 'select',
 					'#size' => '10',
 					 '#attributes' => array('hidden' => 'hidden'),
+					 '#prefix'=> '<div class="editselect">',
+					 '#suffix' => '</div>'
 					);
 				
 				$form['relations_fieldset'][$i]['mapped_class_URI'] = array (
@@ -222,6 +226,7 @@ function editmapping_basic($form, &$form_state) {
 				$form['relations_fieldset'][$i]['labels']['deletemapping'] = array (
 		  	  		'#type' => 'checkbox',
 		  	  		'#title' => t('delete relation'),
+		  	  		'#title_display' => 'before'
 				);
 				
 				$form['relations_fieldset'][$i]['line'] = array (
