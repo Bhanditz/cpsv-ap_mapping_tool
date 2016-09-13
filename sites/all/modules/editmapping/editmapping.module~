@@ -80,7 +80,7 @@ function editmapping_basic($form, &$form_state) {
 	   
 	   
 	   	$form['relations_fieldset']['labels']['dummylabelprobnotgoodpractice'] = array (
-		  	  		'#markup' => '<h2> </h2>',
+		  	  		'#markup' => '<h1> </h1>',
 					);
 		
 		  $form['relations_fieldset']['labels']['core_class_label'] = array (
@@ -369,7 +369,7 @@ function editmapping_exportfields($form, &$form_state) {
 	$graph = new EasyRdf_Graph('test');
 
 	//the $endpoint should point to the correct address
-	$endpoint= 'sparqlEndpoint';
+	$endpoint= 'http://localhost:8890/sparql';
  	$gs = new EasyRdf_Sparql_Client($endpoint);
  	
  	$result= $gs->query('CONSTRUCT {?s ?p ?o} WHERE { GRAPH <http://cpsv-ap_mapping.eu> {?s ?p ?o}}');
@@ -379,7 +379,7 @@ function editmapping_exportfields($form, &$form_state) {
  	
  	$array= $result->resources();
  	
- 	$exportfile= $dir."sites/mappings.rdf";
+ 	$exportfile= $dir."/sites/mappings.rdf";
  	$fh = fopen($exportfile, "w");
  	fwrite($fh, $serialized);
  	fclose($fh);	

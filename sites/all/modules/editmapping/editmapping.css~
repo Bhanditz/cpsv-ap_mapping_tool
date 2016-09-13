@@ -38,7 +38,7 @@
 	font-size: 15px;
 	font-weight: bold;
 	text-align: center;
-	margin: 10px 10px 0px 10px; 
+	margin: 2px 2px 0px 2px; 
 }
 
 
@@ -49,8 +49,9 @@
 	font-size: 12px;
 	font-weight: bold;
 	text-align: left;
-	margin: 10px 10px 0px 10px; 
+	margin: 10px 2px 0px 2px; 
 }
+
 
 #relations-fieldset-wrapper .form-wrapper h3{
 	float: left;
@@ -59,6 +60,14 @@
 	padding: 20px 10px 0px 10px;
 	margin: 20px 10px 40px 10px; 
 }
+
+#relations-fieldset-wrapper .form-wrapper div.style1{
+	width: 1000px;
+	margin: 10px 0px 10px 0px;
+	float: left;
+	border-top: 1px solid #8c8b8b;
+}
+
 #relations-fieldset-wrapper .form-wrapper .form-item.form-type-textfield{ 
 	float:left;
 	width : 110px;
@@ -81,6 +90,7 @@
     text-align: center;
 	padding: 10px 10px 25px 10px;
 	margin: 10px 10px 0px 10px; 
+	background-color: blue;
 }
 
 #relations-fieldset-wrapper {

@@ -110,7 +110,7 @@ function mapping_basic($form, &$form_state) {
 	 	 );	
 	   
 	   	$form['relations_fieldset']['labels']['dummylabelprobnotgoodpractice'] = array (
-		  	  		'#markup' => '<h2> </h2>',
+		  	  		'#markup' => '<h1> </h1>',
 					);
 		
 		  $form['relations_fieldset']['labels']['core_class_label'] = array (
@@ -240,7 +240,7 @@ function mapping_basic($form, &$form_state) {
 					);
 								
 				$form['relations_fieldset'][$i]['relation_URI'] = array (
-					'#type' => 'textfield',
+					'#type' => 'select',
 					'#size' => '10',
 					 '#attributes' => array('hidden' => 'hidden'),
 					);
@@ -521,7 +521,7 @@ function mapping_basic_validate($form, &$form_state){
 	for($i = 0; $i < $form_state['num_relations']; $i++){
  	  $testempty1= trim($form_state['values']['relations_fieldset'][$i]['core_property']);
  	  $testempty2= trim($form_state['values']['relations_fieldset'][$i]['mapped_class']);
- 	  $testempty3= trim($form_state['values']['relations_fieldset'][$i]['core_class'])
+ 	  $testempty3= trim($form_state['values']['relations_fieldset'][$i]['core_class']);
  	  
  	  if(!empty($testempty1) && !empty($testempty2) &&empty($testempty3)) {
  	 	 form_set_error('postal', t('The Core class is required.'));
@@ -531,7 +531,7 @@ function mapping_basic_validate($form, &$form_state){
  	  $testempty1= trim($form_state['values']['relations_fieldset'][$i]['mapped_property']);
  	  $testempty2= trim($form_state['values']['relations_fieldset'][$i]['core_property']);
  	  
- 	if(!empty($testempty1) && empty($testempty2) {
+ 	if(!empty($testempty1) && empty($testempty2)) {
  	 	 form_set_error('postal', t('The Core property is required.'));
  	 	 $foo= TRUE;
  	}

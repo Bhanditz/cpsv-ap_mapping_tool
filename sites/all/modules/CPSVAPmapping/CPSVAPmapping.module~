@@ -77,7 +77,7 @@ function CPSVAPmapping_basic($form, &$form_state) {
 	 	 );	
 	 
 	   	$form['relations_fieldset']['labels']['dummylabelprobnotgoodpractice'] = array (
-		  	  		'#markup' => '<h2> </h2>',
+		  	  		'#markup' => '<h1> </h1>',
 					);
 		
 		  $form['relations_fieldset']['labels']['core_class_label'] = array (
@@ -354,9 +354,10 @@ function CPSVAPmapping_generate_uri($form, &$form_state ){
 		if($relation_choice=='Related match')
 			$form_state['input']['relations_fieldset'][$i]['relation_URI']='skos:relatedMatch';
 		
+		$testempty1 = trim($form_state['values']['relations_fieldset'][$i]['mapped_class']);
+		$testempty2 = trim($form_state['values']['relations_fieldset'][$i]['mapped_class_URI']);
 	
-		
-		if(!empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_class']))&& empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_class_URI']))){
+		if(!empty($testempty1)&& empty($testempty2)){
 		$mappedclassUri = $root.'mapping/'.$datamodelURI2.'/class/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['mapped_class']);
 		unset($form_state['input']['relations_fieldset'][$i]['mapped_class_URI']);
 	
@@ -364,7 +365,10 @@ function CPSVAPmapping_generate_uri($form, &$form_state ){
 		//$form['relations_fieldset'][$i]['mapped_class_URI']['#value']= $mappedclassUri;
 		}
 		
-		if(!empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_property']))&& empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_property_URI']))) {
+		$testempty1 = trim($form_state['values']['relations_fieldset'][$i]['mapped_property']);
+		$testempty2 = trim($form_state['values']['relations_fieldset'][$i]['mapped_property_URI']);
+		
+		if(!empty($testempty1)&& empty($testempty2)) {
 		$mappedpropertyUri = $root.'mapping/'.$datamodelURI2.'/property/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['mapped_property']);
 		unset($form_state['input']['relations_fieldset'][$i]['mapped_property_URI']);
 
@@ -391,43 +395,46 @@ function CPSVAPmapping_basic_validate($form, &$form_state){
  
   $select2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
 	
-	
-  
   if($select2== "add new"){
   	  
-  	  if(empty(trim($form_state['values']['datamodel_fieldset2']['datamodel2']))){
+  	  $testempty1 = trim($form_state['values']['datamodel_fieldset2']['datamodel2']);
+  	  if(empty($testempty1)){
   	  	  form_set_error('postal', t('datamodel 2 name is required.'));
  	 	 $foo= TRUE;
  	  }
  	  
- 	   if(empty(trim($form_state['values']['datamodel_fieldset2']['URI2']))){
+ 	  $testempty1 = trim($form_state['values']['datamodel_fieldset2']['URI2']);
+ 	  if(empty($testempty1)){
   	  	  form_set_error('postal', t('datamodel uri is required.'));
  	 	 $foo= TRUE;
  	  }
   }
 
 	for($i = 0; $i < $form_state['num_relations']; $i++){
- 	 if(empty(trim($form_state['values']['relations_fieldset'][$i]['core_class']))) {
+	
+	 $testempty1 = trim($form_state['values']['relations_fieldset'][$i]['core_class']);
+ 	 if(empty($testempty1)) {
  	 	 form_set_error('postal', t('The Core class is required.'));
  	 	 $foo= TRUE;
  	}
- 	
- 	if(empty(trim($form_state['values']['relations_fieldset'][$i]['core_property']))) {
+ 	$testempty1 = trim($form_state['values']['relations_fieldset'][$i]['core_property']);
+ 	if(empty($testempty1)) {
  	 	 form_set_error('postal', t('The Core property is required.'));
  	 	 $foo= TRUE;
  	}
  	
- 	if(empty(trim($form_state['values']['relations_fieldset'][$i]['relation']))) {
+ 	$testempty1 = trim($form_state['values']['relations_fieldset'][$i]['relation']);
+ 	if(empty($testempty1)) {
  	 	 form_set_error('postal', t('The relation is required.'));
  	 	 $foo= TRUE;
  	}
- 	
- 	if(empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_class']))) {
+ 	$testempty1 = trim($form_state['values']['relations_fieldset'][$i]['mapped_class']);
+ 	if(empty($testempty1)) {
  	 	 form_set_error('postal', t('The mapped class is required.'));
  	 	 $foo= TRUE;
  	}
- 	
- 	if(empty(trim($form_state['values']['relations_fieldset'][$i]['mapped_property']))) {
+ 	$testempty1 = trim($form_state['values']['relations_fieldset'][$i]['mapped_property']);
+ 	if(empty($testempty1)) {
  	 	 form_set_error('postal', t('The mapped property is required.'));
  	 	 $foo= TRUE;
  	
@@ -460,6 +467,7 @@ function CPSVAPmapping_basic_submit($form, &$form_state) {
 	
  for($i = 0; $i < $form_state['num_relations']; $i++){
  	 
+ 
  	 if(!empty($form['relations_fieldset'][$i]['core_class'])) {
  	 	 
  	$coreclass= $form_state['complete form']['relations_fieldset'][$i]['core_class']['#options'][$form_state['values']['relations_fieldset'][$i]['core_class']];
@@ -509,7 +517,7 @@ function CPSVAPmapping_basic_submit($form, &$form_state) {
  
  	if(easyrdf()){
  		//the $endpoint should point to the correct address
-		$endpoint= 'SparqlEndpoint';
+		$endpoint= 'http://52.50.205.146/sparql';
  		$gs = new EasyRdf_Sparql_Client($endpoint);
  		$graph1 = new EasyRdf_Graph('http://cpsv-ap_mapping.eu');
  		
