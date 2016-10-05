@@ -448,9 +448,9 @@ function editmapping_basic_submit($form, &$form_state) {
     
     }
     
-  	if(easyrdf()){  
+/*  	if(easyrdf()){  
   	//the $endpoint should point to the correct address
-		$endpoint= 'SparqlEndpoint';
+		$endpoint= 'http://52.50.205.146/sparql';
 		$gs = new EasyRdf_Sparql_Client($endpoint);
 		
  	
@@ -740,6 +740,6 @@ function editmapping_basic_submit($form, &$form_state) {
  				);
  				
  		}
- 		}
+ 		}*/
  	}	
 }

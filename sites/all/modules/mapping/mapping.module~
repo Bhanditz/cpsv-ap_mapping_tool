@@ -31,27 +31,26 @@ function mapping_basic($form, &$form_state) {
 					'#type' => 'select',
 					'#options' => $datamodel_list,
 					'#default_value' => 'default',
-					
 				);
 	
 	$form['wrapper_datamodels'] = array(
 		 '#prefix' => '<div id="wrapper-datamodels">',
 	 	 '#suffix' => '</div>',
-	 	 );	
+	 	 		);	
 	
 	$form['wrapper_datamodels']['datamodel_fieldset1'] = array(
 		 '#type' => 'fieldset',
 	 	 '#title' => t('datamodel 1'),
 	 	 '#prefix' => '<div id="datamodel-fieldset1">',
 	 	 '#suffix' => '</div>',
-	 	 );	
+	 	 		);	
 	
 	$form['wrapper_datamodels']['datamodel_fieldset2'] = array(
 		 '#type' => 'fieldset',
 	 	 '#title' => t('datamodel 2'),
 	 	 '#prefix' => '<div id="datamodel-fieldset2">',
 	 	 '#suffix' => '</div>',
-	 	 );	  	 	 
+	 	 		);	  	 	 
 		 
 			$form['wrapper_datamodels']['datamodel_fieldset1']['datamodel1'] = array (
 		  	  		'#title' => t('Name of the first datamodel'),
@@ -410,20 +409,6 @@ function mapping_generate_uri($form, &$form_state ){
 		//$form['relations_fieldset'][$i]['core_property_URI']['#value']= $corepropertyUri;
 		}
 	
-		$relation_choice= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']];
-	
-			
-		if($relation_choice=='Exact match')
-			$form_state['input']['relations_fieldset'][$i]['relation_URI']='skos:exactMatch';
-		if($relation_choice=='Close match')
-			$form_state['input']['relations_fieldset'][$i]['relation_URI']='skos:closeMatch';
-		if($relation_choice=='Narrow match')
-			$form_state['input']['relations_fieldset'][$i]['relation_URI']='skos:narrowMatch';
-		if($relation_choice=='Broad match')
-			$form_state['input']['relations_fieldset'][$i]['relation_URI']='skos:broadMatch';
-		if($relation_choice=='Related match')
-			$form_state['input']['relations_fieldset'][$i]['relation_URI']='skos:relatedMatch';
-		
 	
 		$testempty1= trim($form_state['values']['relations_fieldset'][$i]['mapped_class']);
 		$testempty2= trim($form_state['values']['relations_fieldset'][$i]['mapped_class_URI']);
@@ -570,9 +555,10 @@ function mapping_basic_validate($form, &$form_state){
 function mapping_basic_submit($form, &$form_state) {
 	
 	
-		$select1 = $form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
+	$select1 = $form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
 	$select2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
 	
+
 	
 	if($select1== "add new") {
 		$datamodel1=$form_state['values']['wrapper_datamodels']['datamodel_fieldset1']['datamodel1'];
@@ -600,24 +586,34 @@ function mapping_basic_submit($form, &$form_state) {
 	
  for($i = 0; $i < $form_state['num_relations']; $i++){
  	 
-
- 	$coreclass= $form_state['values']['relations_fieldset'][$i]['core_class'];
+	
+	$relation_choice= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']];
+	$coreclass= $form_state['values']['relations_fieldset'][$i]['core_class'];
  	$coreclassuri=$form_state['values']['relations_fieldset'][$i]['core_class_URI'];
 	$coreproperty=$form_state['values']['relations_fieldset'][$i]['core_property'];
 	$corepropertyuri=$form_state['values']['relations_fieldset'][$i]['core_property_URI'];
 	$relation= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']];
-	$relationuri= $form_state['values']['relations_fieldset'][$i]['relation_URI'];
+	if($relation_choice=='Exact match')
+		$relationuri='skos:exactMatch';
+	if($relation_choice=='Close match')
+		$relationuri='skos:closeMatch';
+	if($relation_choice=='Narrow match')
+		$relationuri='skos:narrowMatch';
+	if($relation_choice=='Broad match')
+		$relationuri='skos:broadMatch';
+	if($relation_choice=='Related match')
+		$relationuri='skos:relatedMatch';
 	$mappedclass= $form_state['values']['relations_fieldset'][$i]['mapped_class'];
 	$mappedclassuri= $form_state['values']['relations_fieldset'][$i]['mapped_class_URI'];
 	$mappedproperty= $form_state['values']['relations_fieldset'][$i]['mapped_property'];
 	$mappedpropertyuri= $form_state['values']['relations_fieldset'][$i]['mapped_property_URI'];
 	
+	
 	if(!$form_state['values']['relations_fieldset'][$i]['syntax_mapping'])
 		$synmap= 0;
 	else
 		$synmap= $form_state['values']['relations_fieldset'][$i]['syntax_mapping'];
- 	 
-	drupal_set_message($relation);
+
 	db_insert('relations')
     ->fields(array(
     	
@@ -654,16 +650,14 @@ function mapping_basic_submit($form, &$form_state) {
       
 if(easyrdf()){
 		//the $endpoint should point to the correct address
-		$endpoint= 'http://52.50.205.146/sparql';
- 		$gs = new EasyRdf_Sparql_Client($endpoint);
- 		$graph1 = new EasyRdf_Graph('http://cpsv-ap_mapping.eu');
- 		
+		$endpoint= 'http://52.50.205.146/sparql-graph-crud';
+ 		$gs = new EasyRdf_GraphStore($endpoint);
+ 		$graph1 = new EasyRdf_Graph();
  		//datamodel definition
  		$graph1->addResource('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
  		$graph1->addResource('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2004/02/skos/core#Concept');
  		$graph1->add('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/2000/01/rdf-schema#label', "Core Data Model");
- 		$graph1->add('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', "reusable data models that are defined, managed, promoted and maintained centrally to facilitate interoperability across different systems, applications and domains"
-);
+ 		$graph1->add('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', "reusable data models that are defined, managed, promoted and maintained centrally to facilitate interoperability across different systems, applications and domains"); 
  		
  		//datamodel, classes & properties
  		$graph1->addResource($datamodelURI1, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://mapping.semic.eu/def#DataModel');
@@ -672,18 +666,18 @@ if(easyrdf()){
  		$graph1->addResource($mappedpropertyuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property');
  		$graph1->addResource($coreclassuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
  		$graph1->addResource($mappedclassuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
- 		
+ 		 
  		//ispartof
- 		
+ 		 
  		$graph1->addResource($coreclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI1);
  		$graph1->addResource($mappedclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI2);
  		$graph1->addResource($corepropertyuri, 'http://purl.org/dc/terms/isPartOf', $coreclassuri);
  		$graph1->addResource($mappedpropertyuri, 'http://purl.org/dc/terms/isPartOf', $mappedclassuri);
  		$graph1->addResource($corepropertyuri,$relationuri, $mappedpropertyuri); 		
- 			
- 	$gs->insert($graph1, 'http://cpsv-ap_mapping.eu');
  	
+ 		$gs->insert($graph1,'http://cpsv-ap_mapping.eu');
  	
+ 	drupal_set_message('mapping added');
 	 	
 	}
  }

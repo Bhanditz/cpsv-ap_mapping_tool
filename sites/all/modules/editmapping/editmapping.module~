@@ -145,6 +145,8 @@ function editmapping_basic($form, &$form_state) {
 								
 				$form['relations_fieldset'][$i]['relation'] = array (
 					'#type' => 'select',
+					 '#prefix'=> '<div class="editselect">',
+					 '#suffix' => '</div>',
 					'#options' => $dropdown_array,
 /*						'#ajax' => array(
 						'event' => 'change',
@@ -202,9 +204,11 @@ function editmapping_basic($form, &$form_state) {
 					);
 								
 				$form['relations_fieldset'][$i]['relation_URI'] = array (
-					'#type' => 'textfield',
+					'#type' => 'select',
 					'#size' => '10',
 					 '#attributes' => array('hidden' => 'hidden'),
+					 '#prefix'=> '<div class="editselect">',
+					 '#suffix' => '</div>'
 					);
 				
 				$form['relations_fieldset'][$i]['mapped_class_URI'] = array (
@@ -222,6 +226,7 @@ function editmapping_basic($form, &$form_state) {
 				$form['relations_fieldset'][$i]['labels']['deletemapping'] = array (
 		  	  		'#type' => 'checkbox',
 		  	  		'#title' => t('delete relation'),
+		  	  		'#title_display' => 'before'
 				);
 				
 				$form['relations_fieldset'][$i]['line'] = array (
@@ -363,28 +368,25 @@ function editmapping_fillfields($form, &$form_state){
 function editmapping_exportfields($form, &$form_state) {
 	$datamodel1 =$form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
 	$datamodel2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
-	
-	if(easyrdf()){  
 		
-	$graph = new EasyRdf_Graph('test');
-
-	//the $endpoint should point to the correct address
-	$endpoint= 'http://localhost:8890/sparql';
- 	$gs = new EasyRdf_Sparql_Client($endpoint);
- 	
- 	$result= $gs->query('CONSTRUCT {?s ?p ?o} WHERE { GRAPH <http://cpsv-ap_mapping.eu> {?s ?p ?o}}');
-
- 	$dir = getcwd();
- 	$serialized= $result->serialise('rdfxml');
- 	
- 	$array= $result->resources();
- 	
- 	$exportfile= $dir."/sites/mappings.rdf";
- 	$fh = fopen($exportfile, "w");
- 	fwrite($fh, $serialized);
- 	fclose($fh);	
- 	
- 	}
+	$query = "CONSTRUCT {?s ?p ?o}
+	WHERE { GRAPH <http://cpsv-ap_mapping.eu> {?s ?p ?o}}";
+	
+	$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
+	
+	$ch = curl_init();
+	curl_setopt($ch,CURLOPT_URL,$searchUrl);
+	curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+	$response=curl_exec($ch);
+	curl_close($ch);
+	
+	drupal_set_message("worked?".$response);
+	
+	header("Content-Disposition: attachment; filename=\"export.rdf\"");
+	header("Content-Type: text/plain");
+	header("Content-Length: ".strlen($response));
+	echo $response;
+	exit;
 }
 	
 
@@ -424,11 +426,9 @@ function editmapping_basic_submit($form, &$form_state) {
 	$mappedpropertyuri= $form_state['values']['relations_fieldset'][$i]['mapped_property_URI'];
 	$synmap= $form_state['values']['relations_fieldset'][$i]['syntax_mapping'];
 	$deletemapping= $form_state['values']['relations_fieldset'][$i]['labels']['deletemapping'];
- 	 
-	
-	if( $form_state['values']['relations_fieldset'][$i]['labels']['deletemapping']== FALSE) {
-		
  	
+	if( $form_state['values']['relations_fieldset'][$i]['labels']['deletemapping']== FALSE) {
+
 	db_insert('relations')
     ->fields(array(
       'did1' => $datamodel1,
@@ -450,7 +450,7 @@ function editmapping_basic_submit($form, &$form_state) {
     
   	if(easyrdf()){  
   	//the $endpoint should point to the correct address
-		$endpoint= 'SparqlEndpoint';
+		$endpoint= 'http://52.50.205.146/drupal';
 		$gs = new EasyRdf_Sparql_Client($endpoint);
 		
  	

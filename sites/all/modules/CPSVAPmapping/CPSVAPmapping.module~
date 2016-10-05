@@ -4,7 +4,6 @@
 function CPSVAPmapping_menu() {
 
 	$items['CPSVAPmappings'] = array(
-		'title' => 'CPSVAPmapping',
 		'page callback' => 'drupal_get_form',
 		'page arguments' => array('CPSVAPmapping_basic'),
 		'access callback' => TRUE,
@@ -469,13 +468,25 @@ function CPSVAPmapping_basic_submit($form, &$form_state) {
  	 
  
  	 if(!empty($form['relations_fieldset'][$i]['core_class'])) {
- 	 	 
+ 	$relation_choice= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']]; 	 
  	$coreclass= $form_state['complete form']['relations_fieldset'][$i]['core_class']['#options'][$form_state['values']['relations_fieldset'][$i]['core_class']];
  	$coreclassuri = $root.'mapping/'.$datamodelURI1.'/property/'.str_replace(' ','',$form_state['complete form']['relations_fieldset'][$i]['core_class']['#options'][$form_state['values']['relations_fieldset'][$i]['core_class']]);
- 	$corepropertyuri = $root.'mapping/'.$datamodelURI1.'/property/'.str_replace(' ','',$form_state['complete form']['relations_fieldset'][$i]['core_property']['#options'][$form_state['values']['relations_fieldset'][$i]['core_property']]);
-	$coreproperty=$form_state['complete form']['relations_fieldset'][$i]['core_property']['#options'][$form_state['values']['relations_fieldset'][$i]['core_property']];	
+ 	
+ 	if property is none, need to be rel beztween classes
+ 	$coreproperty=$form_state['complete form']['relations_fieldset'][$i]['core_property']['#options'][$form_state['values']['relations_fieldset'][$i]['core_property']];	
+	$corepropertyuri = $root.'mapping/'.$datamodelURI1.'/property/'.str_replace(' ','',$form_state['complete form']['relations_fieldset'][$i]['core_property']['#options'][$form_state['values']['relations_fieldset'][$i]['core_property']]);
+	
 	$relation= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']];
-	$relationuri= $form_state['values']['relations_fieldset'][$i]['relation_URI'];
+	if($relation_choice=='Exact match')
+		$relationuri='skos:exactMatch';
+	if($relation_choice=='Close match')
+		$relationuri='skos:closeMatch';
+	if($relation_choice=='Narrow match')
+		$relationuri='skos:narrowMatch';
+	if($relation_choice=='Broad match')
+		$relationuri='skos:broadMatch';
+	if($relation_choice=='Related match')
+		$relationuri='skos:relatedMatch';
 	$mappedclass= $form_state['values']['relations_fieldset'][$i]['mapped_class'];
 	$mappedclassuri= $form_state['values']['relations_fieldset'][$i]['mapped_class_URI'];
 	$mappedproperty= $form_state['values']['relations_fieldset'][$i]['mapped_property'];
@@ -503,7 +514,7 @@ function CPSVAPmapping_basic_submit($form, &$form_state) {
     else {
     	drupal_set_message('CPSVAPmapping relations are not filled in correctly');
     }
- }
+ 
     
     if($select2 =='add new') {
     	db_insert('datamodels')
@@ -517,9 +528,9 @@ function CPSVAPmapping_basic_submit($form, &$form_state) {
  
  	if(easyrdf()){
  		//the $endpoint should point to the correct address
-		$endpoint= 'http://52.50.205.146/sparql';
- 		$gs = new EasyRdf_Sparql_Client($endpoint);
- 		$graph1 = new EasyRdf_Graph('http://cpsv-ap_mapping.eu');
+		$endpoint= 'http://52.50.205.146/sparql-graph-crud';
+ 		$gs = new EasyRdf_GraphStore($endpoint);
+ 		$graph1 = new EasyRdf_Graph();
  		
  		//datamodel definition
  		$graph1->addResource('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
@@ -541,13 +552,15 @@ function CPSVAPmapping_basic_submit($form, &$form_state) {
  		$graph1->addResource($mappedclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI2);
  		$graph1->addResource($corepropertyuri, 'http://purl.org/dc/terms/isPartOf', $coreclassuri);
  		$graph1->addResource($mappedpropertyuri, 'http://purl.org/dc/terms/isPartOf', $mappedclassuri);
+ 		if($corepropertyuri == 'none'
  		$graph1->addResource($corepropertyuri,$relationuri, $mappedpropertyuri); 		
  			
  	$gs->insert($graph1, 'http://cpsv-ap_mapping.eu');
  	
- 	
+ 	drupal_set_message('mapping added');
 
- 	}
+ 		}
+	}
 }
 
 function CPSVAPmapping_basic_populate_list(){
@@ -623,22 +636,30 @@ function CPSVAPmapping_get_class_chosen() {
   // drupal_map_assoc() just makes an array('String' => 'String'...).
   return drupal_map_assoc(
     array(
-      t('Public Service'),
-      t('Business Event'),
+    t('Public Service'),
+    t('Event'),
+    t('Business Event'),
+    t('Life Event'),
+    t('Participation'),
+    t('CriterionRequirement'),
+    t('Evidence'),
+    t('Output'),
+    t('Cost'),
+    t('Channel'),
+    t('Period Of Time'),
+    t('Rule'),
+    t('Formal Framework'),
+    t('Agent'),
+    t('Contact Point'),
+    t('Public Organisation'),
+   /*   
       t('Input'),
-      t('Agent'),
       t('Person'),
-      t('Period Of Time'),
-      t('Formal Framework'),
-      t('Public Organisation'),
-      t('Channel'),
-      t('Cost'),
       t('Location'),
       t('Formal Organisation'),
       t('Legal Entity'),
-      t('Output'),
       t('Addres'),
-         
+         */
       
     )
   );
@@ -648,6 +669,7 @@ function CPSVAPmapping_get_properties_dropdown_options($key = '') {
   $options = array(
     t('Public Service') => drupal_map_assoc(
       array(
+      	t(''),
         t('Name'),
         t('Description'),
         t('Identifier'),
@@ -656,20 +678,62 @@ function CPSVAPmapping_get_properties_dropdown_options($key = '') {
         t('Processing Time'),
         t('Sector'),
         t('Type'),
-        
+        t('Status'),
+        t('Is Grouped By'),
+        t('Requires'),
+        t('Related'),
+        t('Has Criterion'),
+        t('Has Competent Authority'),
+        t('Service Provider'),
+        t('Service User'),
+        t('Has Participation'),
+        t('Has Input'),
+        t('Has Formal Framework'),
+        t('Produces'),
+        t('Follows'),
+        t('Spatial'),
+        t('Temporal'),
+        t('Has Cost'), 
       )
     ),
-    t('Business Event') => drupal_map_assoc(
+    t('Event') => drupal_map_assoc(
       array(
+      	t(''),
         t('Name'),
         t('Identifier'),
         t('Description'),
-        t('Language'),
         t('Type'),
-        t('Processing Time'),
+        t('Related Service'),
       )
     ),
-    t('Input') => drupal_map_assoc(
+    t('Participation') => drupal_map_assoc(
+      array(
+      	t(''),
+        t('Identifier'),
+        t('Description'),
+        t('Role'),
+      )
+    ),
+    t('CriterionRequirement') => drupal_map_assoc(
+      array(
+      	t(''),
+        t('Name'),
+        t('Identifier'),
+        t('Type'),
+      )
+    ),
+    t('Evidence') => drupal_map_assoc(
+      array(
+      	t(''),
+        t('Identifier'),
+        t('Name'),
+        t('Description'),
+        t('Type'),
+        t('Related Documentation'),
+        t('Language'),
+      )
+    ),
+  /*  t('Input') => drupal_map_assoc(
       array(
         t('Name'),
         t('Identifier'),
@@ -677,55 +741,97 @@ function CPSVAPmapping_get_properties_dropdown_options($key = '') {
         t('Related Documentation'),
         t('Type'),
       )
-    ),
+    ),*/
     t('Agent') => drupal_map_assoc(
       array(
+      	t(''),
         t('Name'),
         t('Identifier'),
         t('Type'),
+        t('Plays Role'),
+        t('Uses'),
+        t('Has Address'),
       )
     ),
-    t('Person') => drupal_map_assoc(
+    t('Contact Point') => drupal_map_assoc(
+      array(
+      	t(''),
+        t('Name'),
+        t('Identifier'),
+        t('Type'),
+        t('Plays Role'),
+        t('Uses'),
+        t('Has Address'),
+      )
+    ),
+ /*  t('Person') => drupal_map_assoc(
       array()
-      ),
+      ),*/
     t('Period Of Time') => drupal_map_assoc(
       array(
+      	t(''),
         t('Identifier'),
         t('Start date/time'),
         t('End date/time'),
+        t('Opening Hours'),
+        )
+      ),
+    t('Rule') => drupal_map_assoc(
+      array(
+      	t(''),
+        t('Identifier'),
+        t('Description'),
+        t('Language'),
+        t('Name'),
+        t('Implements'),
         )
       ),
     t('Formal Framework') => drupal_map_assoc(
       array(
+      	t(''),
         t('Name'),
-        t('Description'),
         t('Identifier'),
+        t('Description'),
         t('Status'),
         t('Language'),
-        t('Subject Code'),
-        t('Territorial Application Code'),
+        t('Subject'),
+        t('Territorial Application'),
         t('Type'),
+        t('Related'),
         )
       ), 
-    t('Public Organisation') => drupal_map_assoc(
+    t('The Public Organization') => drupal_map_assoc(
       array(
-        t('Type'),
+      	t(''),
+      	t('Identifier'),
+      	t('Preferred Label'),
+      	t('Spatial'),
         )
       ), 
     t('Channel') => drupal_map_assoc(
       array(
+      	t(''),
         t('Identifier'),
+        t('Is Owned By'),
         t('Type'),
+        t('Has Contact point'),
+        t('Processing Time'),
+        t('Availability'),
+        t('Has Cost'),
+        t('Has Input'),
         )
       ), 
     t('Cost') => drupal_map_assoc(
       array(
-        t('Name'),
-        t('Description'),
+      	t(''),
+        t('Identifier'),      
         t('Value'),
-        t('Currency'),)
+        t('Currency'),
+        t('Description'),
+        t('Is Defined By'),
+        )
       ), 
-    t('Location') => drupal_map_assoc(
+   /* t('Location') => drupal_map_assoc(
       array()
       ), 
     t('Formal Organisation') => drupal_map_assoc(
@@ -736,18 +842,19 @@ function CPSVAPmapping_get_properties_dropdown_options($key = '') {
         t('Homepage')
         )
       ), 
-    t('Legal Entity') => drupal_map_assoc(
+      t('Legal Entity') => drupal_map_assoc(
       array()
-      ), 
+      ), */
     t('Output') => drupal_map_assoc(
       array(
+      	t(''),
         t('Identifier'),
         t('Name'),
         t('Description'),
         t('Type'),
         )
       ), 
-    t('Addres') => drupal_map_assoc(
+/*   t('Addres') => drupal_map_assoc(
       array(
         t('Full Address'),
         t('Address ID'),
@@ -762,7 +869,7 @@ function CPSVAPmapping_get_properties_dropdown_options($key = '') {
         t('Thoroughfare'),
         
         )
-      ),
+      ),*/
 );
     
   if (isset($options[$key])) {
