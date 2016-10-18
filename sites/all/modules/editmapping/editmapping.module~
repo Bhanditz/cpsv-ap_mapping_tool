@@ -5,7 +5,7 @@ require 'vendor/autoload.php';
 function editmapping_menu() {
 
 	$items['editmappings'] = array(
-		'title' => 'edit and export mappings',
+		'title' => 'Edit and export mappings',
 		'page callback' => 'drupal_get_form',
 		'page arguments' => array('editmapping_basic'),
 		'access callback' => TRUE,
@@ -26,19 +26,75 @@ function editmapping_basic($form, &$form_state) {
 	
 	
 	$form['datamodellist1'] = array (
-					'#title' => t('Choose a core datamodel to change the mappings'),
+					'#title' => t('Choose a source datamodel to change the mappings'),
 					'#type' => 'select',
 					'#options' => $datamodel_list,
 					'#default_value' => 'default',
 					
 				);
 	
+	
+	
 	$form['datamodellist2'] = array (
-					'#title' => t('Choose a mapped datamodel to change the relations'),
+					'#title' => t('Choose a target datamodel to change the relations'),
 					'#type' => 'select',
 					'#options' => $datamodel_list,
 					'#default_value' => 'default',
 				
+				);
+	
+	
+	$form['wrapper_datamodels']['datamodel_fieldset1'] = array(
+		 '#type' => 'fieldset',
+	 	 '#title' => t('datamodel 1'),
+	 	 '#prefix' => '<div id="datamodel-fieldset1">',
+	 	 '#suffix' => '</div>',
+	 	 		);	
+	
+	$form['wrapper_datamodels']['datamodel_fieldset2'] = array(
+		 '#type' => 'fieldset',
+	 	 '#title' => t('datamodel 2'),
+	 	 '#prefix' => '<div id="datamodel-fieldset2">',
+	 	 '#suffix' => '</div>',
+	 	 		);	  	 	 
+		 
+			$form['wrapper_datamodels']['datamodel_fieldset1']['datamodel1'] = array (
+		  	  		'#title' => t('Name of the source datamodel'),
+					'#type' => 'textfield',
+					'#size' => '50',
+					
+					);
+			 $form['wrapper_datamodels']['datamodel_fieldset1']['URI1'] = array (
+		  	  		'#title' => t('URI'),
+					'#type' => 'textfield',
+					'#size' => '50',
+				);
+		  
+			
+			 $form['wrapper_datamodels']['datamodel_fieldset2']['datamodel2'] = array (
+		  	  		'#title' => t('Name of the target datamodel'),                                     
+					'#type' => 'textfield',
+					'#size' => '50',
+					
+					);
+			 
+			   $form['wrapper_datamodels']['datamodel_fieldset2']['URI2'] = array (
+							'#title' => t('URI'),
+							'#type' => 'textfield',
+							'#size' => '50',
+							
+							);
+	
+			    $form['wrapper_datamodels']['deletedatamodel'] = array (
+		  	  		'#type' => 'checkbox',
+		  	  		'#title' => t('delete datamodel and ALL relations'),
+		  	  		'#title_display' => 'before'
+				);		   
+			   
+	$form['relations_fieldset'][$i]['labels']['deletemapping'] = array (
+		  	  		'#type' => 'checkbox',
+		  	  		'#title' => t('delete relation'),
+		  	  		'#title_display' => 'before'
 				);
 	
 	$form['get_relations'] = array(
@@ -83,28 +139,28 @@ function editmapping_basic($form, &$form_state) {
 		  	  		'#markup' => '<h1> </h1>',
 					);
 		
-		  $form['relations_fieldset']['labels']['core_class_label'] = array (
-		  	  		'#markup' => '<h1>Core Class</h1>',
+		  $form['relations_fieldset']['labels']['source_class_label'] = array (
+		  	  		'#markup' => '<h1>Source Class</h1>',
 					);
 		  
-		  $form['relations_fieldset']['labels']['core_property_label'] = array (
-					'#markup' => '<h1>Core Property</h1>',
+		  $form['relations_fieldset']['labels']['source_property_label'] = array (
+					'#markup' => '<h1>Source Property</h1>',
 					);
 		  
 		  $form['relations_fieldset']['labels']['relation_label'] = array (
 					'#markup' => '<h1>Relation</h1>',
 					);
 		  
-		  $form['relations_fieldset']['labels']['mapped_class_label'] = array (
-					'#markup' => '<h1>Mapped Class</h1>',
+		  $form['relations_fieldset']['labels']['target_class_label'] = array (
+					'#markup' => '<h1>Target Class</h1>',
 					);
 		  
-		  $form['relations_fieldset']['labels']['mapped_property_label'] = array (
-					'#markup' => '<h1>Mapped Property</h1>',
+		  $form['relations_fieldset']['labels']['target_property_label'] = array (
+					'#markup' => '<h1>Target Property</h1>',
 					);
 		  
-		  $form['relations_fieldset']['labels']['mapped_property_label'] = array (
-					'#markup' => '<h1>Mapped Property</h1>',
+		  $form['relations_fieldset']['labels']['target_property_label'] = array (
+					'#markup' => '<h1>Target Property</h1>',
 					);
 		  
 		  $form['relations_fieldset']['labels']['syntax_editmapping_label'] = array (
@@ -121,7 +177,7 @@ function editmapping_basic($form, &$form_state) {
 		  	  		'#markup' => '<h2>Relationships:</h2>',
 					);
 
-				$form['relations_fieldset'][$i]['core_class'] = array (
+				$form['relations_fieldset'][$i]['source_class'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 /*					'#ajax' => array(
@@ -132,7 +188,7 @@ function editmapping_basic($form, &$form_state) {
 						),*/
 					);
 				
-				$form['relations_fieldset'][$i]['core_property'] = array (
+				$form['relations_fieldset'][$i]['source_property'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 /*						'#ajax' => array(
@@ -156,7 +212,7 @@ function editmapping_basic($form, &$form_state) {
 						),*/
 					);
 				
-				$form['relations_fieldset'][$i]['mapped_class'] = array (
+				$form['relations_fieldset'][$i]['target_class'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 /*						'#ajax' => array(
@@ -168,7 +224,7 @@ function editmapping_basic($form, &$form_state) {
 					
 					);
 				
-				$form['relations_fieldset'][$i]['mapped_property'] = array (
+				$form['relations_fieldset'][$i]['target_property'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 /*						'#ajax' => array(
@@ -186,18 +242,18 @@ function editmapping_basic($form, &$form_state) {
 				//URI's if needed 
 				
 				$form['relations_fieldset'][$i]['uri_label'] = array (
-		  	  		'#markup' => '<h2>Uri\'s: </h2>',
+		  	  		'#markup' => '<h2>URIs: </h2>',
 					);
 				
 				
-					$form['relations_fieldset'][$i]['core_class_URI'] = array (
+					$form['relations_fieldset'][$i]['source_class_URI'] = array (
 					'#title_display'=> 'before',
 					'#type' => 'textfield',
 					'#size' => '10',
 					
 					);
 				
-				$form['relations_fieldset'][$i]['core_property_URI'] = array (
+				$form['relations_fieldset'][$i]['source_property_URI'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 					
@@ -211,13 +267,13 @@ function editmapping_basic($form, &$form_state) {
 					 '#suffix' => '</div>'
 					);
 				
-				$form['relations_fieldset'][$i]['mapped_class_URI'] = array (
+				$form['relations_fieldset'][$i]['target_class_URI'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 					
 					);
 				
-				$form['relations_fieldset'][$i]['mapped_property_URI'] = array (
+				$form['relations_fieldset'][$i]['target_property_URI'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 					
@@ -263,7 +319,7 @@ function editmapping_basic_populate_list(){
 	
 	$databaselist= db_query('SELECT mid,name FROM datamodels') ;
 
-	$options= array();
+	$options= array('0' => '');
    	 	foreach ($databaselist as $item) {
 		  	$key = $item->mid;
 		  	$value = $item->name;
@@ -305,18 +361,27 @@ function editmapping_fillfields($form, &$form_state){
 	
 
 	$relations = db_query('SELECT * FROM relations WHERE did1= :datamodel1 AND did2= :datamodel2', array(':datamodel1' => $datamodel1, ':datamodel2' => $datamodel2));
+	$datamodel1 = db_query('SELECT * FROM datamodels WHERE name= :datamodel1',array(':datamodel1' => $datamodel1));
+	$datamodel2 = db_query('SELECT * FROM datamodels WHERE name= :datamodel2',array(':datamodel2' => $datamodel2));	
 	$count= $relations->rowCount();
 	$form_state['num_relations']= $count;
 	
+	$row = $datamodel1-> fetchObject();
+	$form_state['input']['wrapper_datamodels']['datamodel_fieldset1']['datamodel1'] =$row-> name;
+	$form_state['input']['wrapper_datamodels']['datamodel_fieldset1']['URI1'] =$row-> uri;
+	
+	$row = $datamodel2-> fetchObject();
+ 	$form_state['input']['wrapper_datamodels']['datamodel_fieldset2']['datamodel2'] =$row-> name;
+ 	$form_state['input']['wrapper_datamodels']['datamodel_fieldset2']['URI2']=$row-> uri;
+ 		
 	for($i=0; $i < $count ; $i++) {
-		
-			
+					
 		$row = $relations->fetchObject();
 		
-		$form_state['input']['relations_fieldset'][$i]['core_class'] = $row-> coreclass;
-		$form_state['input']['relations_fieldset'][$i]['core_class_URI'] = $row-> coreclassuri;
-		$form_state['input']['relations_fieldset'][$i]['core_property'] = $row-> coreproperty;
-		$form_state['input']['relations_fieldset'][$i]['core_property_URI'] = $row-> corepropertyuri;
+		$form_state['input']['relations_fieldset'][$i]['source_class'] = $row-> coreclass;
+		$form_state['input']['relations_fieldset'][$i]['source_class_URI'] = $row-> coreclassuri;
+		$form_state['input']['relations_fieldset'][$i]['source_property'] = $row-> coreproperty;
+		$form_state['input']['relations_fieldset'][$i]['source_property_URI'] = $row-> corepropertyuri;
 		
 		if($row->relation == "Close match") 
 			$form_state['input']['relations_fieldset'][$i]['relation'] = 1;
@@ -329,10 +394,10 @@ function editmapping_fillfields($form, &$form_state){
 		if($row->relation == "Broad match") 
 			$form_state['input']['relations_fieldset'][$i]['relation'] = 5;
 		
-		$form_state['input']['relations_fieldset'][$i]['mapped_class'] = $row-> mappedclass;
-		$form_state['input']['relations_fieldset'][$i]['mapped_class_URI'] = $row-> mappedclassuri;
-		$form_state['input']['relations_fieldset'][$i]['mapped_property'] = $row-> mappedproperty;
-		$form_state['input']['relations_fieldset'][$i]['mapped_property_URI'] = $row-> mappedpropertyuri;
+		$form_state['input']['relations_fieldset'][$i]['target_class'] = $row-> mappedclass;
+		$form_state['input']['relations_fieldset'][$i]['target_class_URI'] = $row-> mappedclassuri;
+		$form_state['input']['relations_fieldset'][$i]['target_property'] = $row->mappedproperty;
+		$form_state['input']['relations_fieldset'][$i]['target_property_URI'] = $row-> mappedpropertyuri;
 		
 		
 		unset($form_state['input']['relations_fieldset'][$i]['syntax_mapping']);
@@ -344,13 +409,13 @@ function editmapping_fillfields($form, &$form_state){
 			$form_state['input']['relations_fieldset'][$i]['synmap'] = FALSE;
 		}
 	
-		$relationsrow = array ('coreclassuri' => $row-> coreclassuri,
-			'corepropertyuri' => $row-> corepropertyuri,
+		$relationsrow = array (
+			'sourceclassuri' => $row-> coreclassuri,
+			'sourcepropertyuri' => $row-> corepropertyuri,
 			'relationuri' =>$row->relationuri,
-			'mappedclassuri' =>$row-> mappedclassuri,
-			'mappedpropertyuri' =>$row->mappedpropertyuri
+			'targetclassuri' =>$row-> mappedclassuri,
+			'targetpropertyuri' =>$row->mappedpropertyuri
 		);
-		
 		
 		
 		$allrelations[] =$relationsrow;
@@ -380,8 +445,6 @@ function editmapping_exportfields($form, &$form_state) {
 	$response=curl_exec($ch);
 	curl_close($ch);
 	
-	drupal_set_message("worked?".$response);
-	
 	header("Content-Disposition: attachment; filename=\"export.rdf\"");
 	header("Content-Type: text/plain");
 	header("Content-Length: ".strlen($response));
@@ -389,24 +452,64 @@ function editmapping_exportfields($form, &$form_state) {
 	exit;
 }
 	
-
 function editmapping_basic_submit($form, &$form_state) {
 	
 
 	$datamodel1 =$form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
+	$datamodel1uri = $form_state['values']['wrapper_datamodels']['datamodel_fieldset1']['URI1'];
+	
 	$datamodel2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
+	$datamodel2uri = $form_state['values']['wrapper_datamodels']['datamodel_fieldset2']['URI2'];
 	
+	$deletedatamodel = $form_state['values']['wrapper_datamodels']['deletedatamodel'];
 	
-	db_query('DELETE FROM relations WHERE did1= :datamodel1 AND did2= :datamodel2', array(':datamodel1' => $datamodel1, ':datamodel2' => $datamodel2));
-  	
  	$data =$_SESSION['allrelations'];
+ 	 	
+	db_query('DELETE FROM relations WHERE did1= :datamodel1 AND did2= :datamodel2', array(':datamodel1' => $datamodel1, ':datamodel2' => $datamodel2));
+	
+	$datamodel1empty = db_query('SELECT * FROM relations WHERE did1= :datamodel1 OR did2= :datamodel1', array(':datamodel1' => $datamodel1));
+	$datamodel2empty = db_query('SELECT * FROM relations WHERE did1= :datamodel2 OR did2= :datamodel2', array(':datamodel2' => $datamodel2));
+	
+	db_query('DELETE FROM datamodels WHERE name= :datamodel1',array(':datamodel1' => $datamodel1));
+	db_query('DELETE FROM datamodels WHERE name= :datamodel2',array(':datamodel2' => $datamodel2));
+	
+	if($deletedatamodel == TRUE){
+		if($datamodel1empty->rowCount() == 0  ){
+			drupal_set_message( $datamodel1.' was deleted'); 
+		}else{
+			drupal_set_message( $datamodel1.' was not deleted as it is still used in other mappings'); 
+		}
+	
+		if($datamodel2empty->rowCount() == 0 ){
+			drupal_set_message( $datamodel2.' was deleted'); 
+		}else{
+			drupal_set_message( $datamodel2.' was not deleted as it is still used in other mappings');
+		}
+	}
  	
+ 	
+ 	if( $deletedatamodel == FALSE) {
+	db_insert('datamodels')
+    ->fields(array(
+      'name' => $datamodel1,
+      'uri' => $datamodel1uri,
+      ))->execute();
+    }
+    
+    if( $deletedatamodel== FALSE) {
+	db_insert('datamodels')
+    ->fields(array(
+      'name' => $datamodel2,
+      'uri' => $datamodel2uri,
+      ))->execute();
+    }
+    
 	for($i = 0; $i < $form_state['num_relations']; $i++){
  		
-	$coreclass= $form_state['values']['relations_fieldset'][$i]['core_class'];
- 	$coreclassuri=$form_state['values']['relations_fieldset'][$i]['core_class_URI'];
-	$coreproperty=$form_state['values']['relations_fieldset'][$i]['core_property'];
-	$corepropertyuri=$form_state['values']['relations_fieldset'][$i]['core_property_URI'];
+	$sourceclass= $form_state['values']['relations_fieldset'][$i]['source_class'];
+ 	$sourceclassuri=$form_state['values']['relations_fieldset'][$i]['source_class_URI'];
+	$sourceproperty=$form_state['values']['relations_fieldset'][$i]['source_property'];
+	$sourcepropertyuri=$form_state['values']['relations_fieldset'][$i]['source_property_URI'];
 	$relation= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']];
 	
 	if($relation=='Exact match')
@@ -420,326 +523,327 @@ function editmapping_basic_submit($form, &$form_state) {
 	if($relation=='Related match')
 		$relationuri='skos:relatedMatch';
 		
-	$mappedclass= $form_state['values']['relations_fieldset'][$i]['mapped_class'];
-	$mappedclassuri= $form_state['values']['relations_fieldset'][$i]['mapped_class_URI'];
-	$mappedproperty= $form_state['values']['relations_fieldset'][$i]['mapped_property'];
-	$mappedpropertyuri= $form_state['values']['relations_fieldset'][$i]['mapped_property_URI'];
+	$targetclass= $form_state['values']['relations_fieldset'][$i]['target_class'];
+	$targetclassuri= $form_state['values']['relations_fieldset'][$i]['target_class_URI'];
+	$targetproperty= $form_state['values']['relations_fieldset'][$i]['target_property'];
+	$targetpropertyuri= $form_state['values']['relations_fieldset'][$i]['target_property_URI'];
 	$synmap= $form_state['values']['relations_fieldset'][$i]['syntax_mapping'];
 	$deletemapping= $form_state['values']['relations_fieldset'][$i]['labels']['deletemapping'];
  	
-	if( $form_state['values']['relations_fieldset'][$i]['labels']['deletemapping']== FALSE) {
-
+	if($deletedatamodel == FALSE && $deletemapping==FALSE ) {
 	db_insert('relations')
     ->fields(array(
+    	
       'did1' => $datamodel1,
       'did2' => $datamodel2,
-      'coreclass' =>$coreclass, 
-      'coreclassuri' => $coreclassuri,
-      'coreproperty' =>$coreproperty,
-      'corepropertyuri' =>$corepropertyuri,
+      'coreclass' =>$sourceclass, 
+      'coreclassuri' => $sourceclassuri,
+      'coreproperty' =>$sourceproperty,
+      'corepropertyuri' =>$sourcepropertyuri,
       'relation' =>$relation,
       'relationuri' =>$relationuri,
-      'mappedclass' =>$mappedclass,
-      'mappedclassuri' =>$mappedclassuri,
-      'mappedproperty' =>  $mappedproperty,
-      'mappedpropertyuri' =>  $mappedpropertyuri,
+      'mappedclass' =>$targetclass,
+      'mappedclassuri' =>$targetclassuri,
+      'mappedproperty' =>  $targetproperty,
+      'mappedpropertyuri' =>  $targetpropertyuri,
       'synmap' =>$synmap,
       ))->execute();
-    
     }
     
-  	if(easyrdf()){  
+	
+
+    if(easyrdf()){  
   	//the $endpoint should point to the correct address
-		$endpoint= 'http://52.50.205.146/drupal';
+		$endpoint= 'http://52.50.205.146/sparql';
 		$gs = new EasyRdf_Sparql_Client($endpoint);
 		
+		$oldvalue = $data[$i]['sourceclassuri'];
+		
+		drupal_set_message("geg:".$sourceclassuri);
+		 
+		drupal_set_message("test:".$oldvalue);
  	
- 	if($data[$i]['coreclassuri'] != $coreclassuri){
- 		$oldvalue = $data[$i]['coreclassuri'];
+ 	if($data[$i]['sourceclassuri'] != $sourceclassuri){
  		
- 		$gs->update(
-			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+ 	drupal_set_message("query werkt");
+ 	$query = 'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {<'.$oldvalue.'> ?p ?o}
-				INSERT {<'.$coreclassuri.'> ?p ?o}
-				WHERE {<'.$oldvalue.'> ?p ?o}'
-			);
-		
-		$gs->update(
-			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				INSERT {<'.$sourceclassuri.'> ?p ?o}
+				WHERE {<'.$oldvalue.'> ?p ?o}
+				
+				MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {?s <'.$oldvalue.'>  ?o}
-				INSERT {?s <'.$coreclassuri.'>  ?o}
-				WHERE {?s <'.$oldvalue.'>  ?o}'
-			);
-		
-		$gs->update(
-			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				INSERT {?s <'.$sourceclassuri.'>  ?o}
+				WHERE {?s <'.$oldvalue.'>  ?o}
+				
+				MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {?s ?p <'.$oldvalue.'>}
-				INSERT {?s ?p <'.$coreclassuri.'>}
-				WHERE {?s ?p <'.$oldvalue.'>}'
-			);
- 	}
+				INSERT {?s ?p <'.$sourceclassuri.'>}
+				WHERE {?s ?p <'.$oldvalue.'>}';
+ 
+	$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
+	drupal_set_message($searchUrl);
+	$ch = curl_init();
+	curl_setopt($ch,CURLOPT_URL,$searchUrl);
+	curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+	$response=curl_exec($ch);
+	curl_close($ch);
+	
+	}
  	
- 	if($data[$i]['corepropertyuri'] != $corepropertyuri){
- 		$oldvalue = $data[$i]['corepropertyuri'];
+	
+ 	if($data[$i]['sourcepropertyuri'] != $sourcepropertyuri){
  		
- 		$gs->update(
-			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+ 		$oldvalue = $data[$i]['sourcepropertyuri'];
+ 		
+ 		$query=	'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {<'.$oldvalue.'> ?p ?o}
-				INSERT {<'.$corepropertyuri.'> ?p ?o}
-				WHERE {<'.$oldvalue.'> ?p ?o}'
-			);
-		
-		$gs->update(
-			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				INSERT {<'.$sourcepropertyuri.'> ?p ?o}
+				WHERE {<'.$oldvalue.'> ?p ?o}
+				
+				MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {?s <'.$oldvalue.'>  ?o}
-				INSERT {?s <'.$corepropertyuri.'>  ?o}
-				WHERE {?s <'.$oldvalue.'>  ?o}'
-			);
-		
-		$gs->update(
-			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				INSERT {?s <'.$sourcepropertyuri.'>  ?o}
+				WHERE {?s <'.$oldvalue.'>  ?o}
+				
+				MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {?s ?p <'.$oldvalue.'>}
-				INSERT {?s ?p <'.$corepropertyuri.'>}
-				WHERE {?s ?p <'.$oldvalue.'>}'
-			);
+				INSERT {?s ?p <'.$sourcepropertyuri.'>}
+				WHERE {?s ?p <'.$oldvalue.'>}';
+			
+						
+		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
+		drupal_set_message($searchUrl);
+		$ch = curl_init();
+		curl_setopt($ch,CURLOPT_URL,$searchUrl);
+		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+		$response=curl_exec($ch);
+		curl_close($ch);
  	}
  	
  	if($data[$i]['relationuri'] != $relationuri){
  		$oldvalue = $data[$i]['relationuri'];
  		
- 		$gs->update(
-			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+ 		$query ='MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {<'.$oldvalue.'> ?p ?o}
 				INSERT {<'.$relationuri.'> ?p ?o}
-				WHERE {<'.$oldvalue.'> ?p ?o}'
-			);
-		
-		$gs->update(
-			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				WHERE {<'.$oldvalue.'> ?p ?o}
+				
+				MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {?s <'.$oldvalue.'>  ?o}
 				INSERT {?s <'.$relationuri.'>  ?o}
-				WHERE {?s <'.$oldvalue.'>  ?o}'
-			);
-		
-		$gs->update(
-			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				WHERE {?s <'.$oldvalue.'>  ?o}
+			
+				MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {?s ?p <'.$oldvalue.'>}
 				INSERT {?s ?p <'.$relationuri.'>}
-				WHERE {?s ?p <'.$oldvalue.'>}'
-			);
+				WHERE {?s ?p <'.$oldvalue.'>}';
+				
+		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
+		drupal_set_message($searchUrl);
+		$ch = curl_init();
+		curl_setopt($ch,CURLOPT_URL,$searchUrl);
+		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+		$response=curl_exec($ch);
+		curl_close($ch);
  	}
  	
- 	if($data[$i]['mappedclassuri'] != $mappedclassuri){
- 		$oldvalue = $data[$i]['mappedclassuri'];
+ 	if($data[$i]['targetclassuri'] != $targetclassuri){
+ 		$oldvalue = $data[$i]['targetclassuri'];
  		
- 		$gs->update(
-			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+ 		$query ='MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {<'.$oldvalue.'> ?p ?o}
-				INSERT {<'.$mappedclassuri.'> ?p ?o}
-				WHERE {<'.$oldvalue.'> ?p ?o}'
-			);
-		
-		$gs->update(
-			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				INSERT {<'.$targetclassuri.'> ?p ?o}
+				WHERE {<'.$oldvalue.'> ?p ?o}
+			
+				MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {?s <'.$oldvalue.'>  ?o}
-				INSERT {?s <'.$mappedclassuri.'>  ?o}
-				WHERE {?s <'.$oldvalue.'>  ?o}'
-			);
-		
-		$gs->update(
-			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				INSERT {?s <'.$targetclassuri.'>  ?o}
+				WHERE {?s <'.$oldvalue.'>  ?o}
+				
+				MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {?s ?p <'.$oldvalue.'>}
-				INSERT {?s ?p <'.$mappedclassuri.'>}
-				WHERE {?s ?p <'.$oldvalue.'>}'
-			);
+				INSERT {?s ?p <'.$targetclassuri.'>}
+				WHERE {?s ?p <'.$oldvalue.'>}';
+		
+		
+		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
+		drupal_set_message($searchUrl);
+		$ch = curl_init();
+		curl_setopt($ch,CURLOPT_URL,$searchUrl);
+		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+		$response=curl_exec($ch);
+		curl_close($ch);
  	}
  	
- 	if($data[$i]['mappedpropertyuri'] != $mappedpropertyuri){
- 		$oldvalue = $data[$i]['mappedpropertyuri'];
+ 	if($data[$i]['targetpropertyuri'] != $targetpropertyuri){
+ 		$oldvalue = $data[$i]['targetpropertyuri'];
  		
- 		$gs->update(
-			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+ 		$query ='MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {<'.$oldvalue.'> ?p ?o}
-				INSERT {<'.$mappedpropertyuri.'> ?p ?o}
-				WHERE {<'.$oldvalue.'> ?p ?o}'
-			);
+				INSERT {<'.$targetpropertyuri.'> ?p ?o}
+				WHERE {<'.$oldvalue.'> ?p ?o}
 		
-		$gs->update(
-			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {?s <'.$oldvalue.'>  ?o}
-				INSERT {?s <'.$mappedpropertyuri.'>  ?o}
-				WHERE {?s <'.$oldvalue.'>  ?o}'
-			);
-		
-		$gs->update(
-			'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
+				INSERT {?s <'.$targetpropertyuri.'>  ?o}
+				WHERE {?s <'.$oldvalue.'>  ?o}
+
+				MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {?s ?p <'.$oldvalue.'>}
-				INSERT {?s ?p <'.$mappedpropertyuri.'>}
-				WHERE {?s ?p <'.$oldvalue.'>}'
-			);
+				INSERT {?s ?p <'.$targetpropertyuri.'>}
+				WHERE {?s ?p <'.$oldvalue.'>}';
+				
+		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
+		drupal_set_message($searchUrl);
+		$ch = curl_init();
+		curl_setopt($ch,CURLOPT_URL,$searchUrl);
+		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+		$response=curl_exec($ch);
+		curl_close($ch);
+			
  	}
  
  	//DELETE MAPPING IN TRIPLE STORE
-
+$aantal =$gs->countTriples('?s ?p <'.$oldvalue.'>');
+	drupal_set_message('aantal:'.$aantal);
  	if($deletemapping == TRUE){
- 		//delete mappedproperty
+ 		//delete targetproperty
 
- 		$oldvalue = $data[$i]['coreclassuri'];
+ 		$oldvalue = $data[$i]['sourceclassuri'];
  		
  		
- 		$gs->update(
+ 			$query =
  			'DELETE WHERE {
  					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s ?p <'.$oldvalue.'>}}'
- 				);
+ 					{?s ?p <'.$oldvalue.'>}}			
+ 			DELETE WHERE {
+ 					GRAPH <http://cpsv-ap_mapping.eu>
+ 					{?s <'.$oldvalue.'> ?o}}					
+ 			DELETE WHERE {
+ 					GRAPH <http://cpsv-ap_mapping.eu>
+ 					{ <'.$oldvalue.'> ?p ?o}}
+ 			DELETE WHERE {
+ 					GRAPH <http://cpsv-ap_mapping.eu>
+ 					{?s ?p <'.$sourceclassuri.'>}}				
+ 			DELETE WHERE {
+ 					GRAPH <http://cpsv-ap_mapping.eu>
+ 					{?s <'.$sourceclassuri.'> ?o}}
+ 			
+ 			DELETE WHERE {
+ 					GRAPH <http://cpsv-ap_mapping.eu>
+ 					{ <'.$sourceclassuri.'> ?p ?o}}';
+ 					
  		
- 		$gs->update(
+		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
+		drupal_set_message($searchUrl);
+		$ch = curl_init();
+		curl_setopt($ch,CURLOPT_URL,$searchUrl);
+		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+		$response=curl_exec($ch);
+		curl_close($ch);
+		
+ 		//sourceproperty
+ 		$oldvalue = $data[$i]['sourcepropertyuri'];
+ 		
+ 		
+ 		$query=
 			'DELETE WHERE {
  					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s <'.$oldvalue.'> ?o}}'
- 				);
+ 					{?s ?p <'.$oldvalue.'>}}
+ 			DELETE WHERE {
+ 					GRAPH <http://cpsv-ap_mapping.eu>
+ 					{?s <'.$oldvalue.'> ?o}}				
+ 			DELETE WHERE {
+ 					GRAPH <http://cpsv-ap_mapping.eu>
+ 					{ <'.$oldvalue.'> ?p ?o}}
+ 			DELETE WHERE {
+ 					GRAPH <http://cpsv-ap_mapping.eu>
+ 					{?s ?p <'.$sourcepropertyuri.'>}}
+ 			DELETE WHERE {
+ 					GRAPH <http://cpsv-ap_mapping.eu>
+ 					{?s <'.$sourcepropertyuri.'> ?o}}
+ 			DELETE WHERE {
+ 					GRAPH <http://cpsv-ap_mapping.eu>
+ 					{ <'.$sourcepropertyuri.'> ?p ?o}}';
  		
- 		$gs->update(		
+ 					
+		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
+		drupal_set_message($searchUrl);
+		$ch = curl_init();
+		curl_setopt($ch,CURLOPT_URL,$searchUrl);
+		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+		$response=curl_exec($ch);
+		curl_close($ch);
+		
+ 		//targetclass 
+ 		$oldvalue = $data[$i]['targetclassuri'];
+ 		
+ 		$query=
 			'DELETE WHERE {
  					GRAPH <http://cpsv-ap_mapping.eu>
- 					{ <'.$oldvalue.'> ?p ?o}}'
- 				);
+ 					{?s ?p <'.$oldvalue.'>}}
+			DELETE WHERE {
+ 					GRAPH <http://cpsv-ap_mapping.eu>
+ 					{?s <'.$oldvalue.'> ?o}}	
+			DELETE WHERE {
+ 					GRAPH <http://cpsv-ap_mapping.eu>
+ 					{ <'.$oldvalue.'> ?p ?o}}
+			DELETE WHERE {
+ 					GRAPH <http://cpsv-ap_mapping.eu>
+ 					{?s ?p <'.$targetclassuri.'>}}
+			DELETE WHERE {
+ 					GRAPH <http://cpsv-ap_mapping.eu>
+ 					{?s <'.$targetclassuri.'> ?o}}
+			DELETE WHERE {
+ 					GRAPH <http://cpsv-ap_mapping.eu>
+ 					{ <'.$targetclassuri.'> ?p ?o}}';
  		
- 		$gs->update(
+ 					
+		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
+		drupal_set_message($searchUrl);
+		$ch = curl_init();
+		curl_setopt($ch,CURLOPT_URL,$searchUrl);
+		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+		$response=curl_exec($ch);
+		curl_close($ch);
+		
+ 		//targetproperty
+ 		$oldvalue = $data[$i]['targetpropertyuri'];
+ 		
+ 		$query =
 			'DELETE WHERE {
  					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s ?p <'.$coreclassuri.'>}}'
- 				);
- 		
- 		$gs->update(
-			'DELETE WHERE {
+ 					{?s ?p <'.$oldvalue.'>}}
+ 			DELETE WHERE {
  					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s <'.$coreclassuri.'> ?o}}'
- 				);
- 		
- 		$gs->update(		
-			'DELETE WHERE {
+ 					{?s <'.$oldvalue.'> ?o}}
+			DELETE WHERE {
  					GRAPH <http://cpsv-ap_mapping.eu>
- 					{ <'.$coreclassuri.'> ?p ?o}}'
- 				);
- 		//coreproperty
- 		$oldvalue = $data[$i]['corepropertyuri'];
- 		
- 		$gs->update(
-			'DELETE WHERE {
+ 					{ <'.$oldvalue.'> ?p ?o}}
+			DELETE WHERE {
  					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s ?p <'.$oldvalue.'>}}'
- 				);
- 		
- 		$gs->update(
-			'DELETE WHERE {
+ 					{?s ?p <'.$targetpropertyuri.'>}}
+ 			DELETE WHERE {
  					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s <'.$oldvalue.'> ?o}}'
- 				);
- 		
- 		$gs->update(		
-			'DELETE WHERE {
+ 					{?s <'.$targetpropertyuri.'> ?o}}	
+			DELETE WHERE {
  					GRAPH <http://cpsv-ap_mapping.eu>
- 					{ <'.$oldvalue.'> ?p ?o}}'
- 				);
- 		
- 		$gs->update(
-			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s ?p <'.$corepropertyuri.'>}}'
- 				);
- 		
- 		$gs->update(
-			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s <'.$corepropertyuri.'> ?o}}'
- 				);
- 		
- 		$gs->update(		
-			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{ <'.$corepropertyuri.'> ?p ?o}}'
- 				);
- 		
- 		//mappedclass 
- 		$oldvalue = $data[$i]['mappedclassuri'];
- 		
- 		$gs->update(
-			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s ?p <'.$oldvalue.'>}}'
- 				);
- 		
- 		$gs->update(
-			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s <'.$oldvalue.'> ?o}}'
- 				);
- 		
- 		$gs->update(		
-			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{ <'.$oldvalue.'> ?p ?o}}'
- 				);
- 		
- 		$gs->update(
-			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s ?p <'.$mappedclassuri.'>}}'
- 				);
- 		
- 		$gs->update(
-			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s <'.$mappedclassuri.'> ?o}}'
- 				);
- 		
- 		$gs->update(		
-			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{ <'.$mappedclassuri.'> ?p ?o}}'
- 				);
- 		
- 		//mappedproperty
- 		$oldvalue = $data[$i]['mappedpropertyuri'];
- 		
- 		$gs->update(
-			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s ?p <'.$oldvalue.'>}}'
- 				);
- 		
- 		$gs->update(
- 			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s <'.$oldvalue.'> ?o}}'
- 				);
- 		
- 		$gs->update(		
-			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{ <'.$oldvalue.'> ?p ?o}}'
- 				);
- 		
- 		$gs->update(
-			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s ?p <'.$mappedpropertyuri.'>}}'
- 				);
- 		
- 		$gs->update(
-			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s <'.$mappedpropertyuri.'> ?o}}'
- 				);
- 		
- 		$gs->update(		
-			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{ <'.$mappedpropertyuri.'> ?p ?o}}'
- 				);
+ 					{ <'.$targetpropertyuri.'> ?p ?o}}';
+ 					
+ 					
+		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
+		drupal_set_message($searchUrl);
+		$ch = curl_init();
+		curl_setopt($ch,CURLOPT_URL,$searchUrl);
+		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+		$response=curl_exec($ch);
+		curl_close($ch);
+ 				
  				
  		}
  		}
- 	}	
+ 	}
+ 	
+ 	
 }

@@ -20,14 +20,14 @@ function mapping_basic($form, &$form_state) {
 	$form = array();
 	
 	$form['datamodellist1'] = array (
-					'#title' => t('Choose a datamodel to map to or insert a new one'),
+					'#title' => t('Choose a source datamodel or insert a new one'),
 					'#type' => 'select',
 					'#options' => $datamodel_list,
 					'#default_value' => 'default',			
 				);
 	
 	$form['datamodellist2'] = array (
-					'#title' => t('Choose a datamodel to map or insert a new one'),
+					'#title' => t('Choose a target datamodel or insert a new one'),
 					'#type' => 'select',
 					'#options' => $datamodel_list,
 					'#default_value' => 'default',
@@ -53,7 +53,7 @@ function mapping_basic($form, &$form_state) {
 	 	 		);	  	 	 
 		 
 			$form['wrapper_datamodels']['datamodel_fieldset1']['datamodel1'] = array (
-		  	  		'#title' => t('Name of the first datamodel'),
+		  	  		'#title' => t('Name of the source datamodel'),
 					'#type' => 'textfield',
 					'#size' => '50',
 					'#states' => array(
@@ -75,7 +75,7 @@ function mapping_basic($form, &$form_state) {
 		  
 			
 			 $form['wrapper_datamodels']['datamodel_fieldset2']['datamodel2'] = array (
-		  	  		'#title' => t('Name of the second datamodel'),                                     
+		  	  		'#title' => t('Name of the target datamodel'),                                     
 					'#type' => 'textfield',
 					'#size' => '50',
 					'#states' => array(
@@ -112,28 +112,28 @@ function mapping_basic($form, &$form_state) {
 		  	  		'#markup' => '<h1> </h1>',
 					);
 		
-		  $form['relations_fieldset']['labels']['core_class_label'] = array (
-		  	  		'#markup' => '<h1>Core Class</h1>',
+		  $form['relations_fieldset']['labels']['source_class_label'] = array (
+		  	  		'#markup' => '<h1>Source Class</h1>',
 					);
 		  
-		  $form['relations_fieldset']['labels']['core_property_label'] = array (
-					'#markup' => '<h1>Core Property</h1>',
+		  $form['relations_fieldset']['labels']['source_property_label'] = array (
+					'#markup' => '<h1>Source Property</h1>',
 					);
 		  
 		  $form['relations_fieldset']['labels']['relation_label'] = array (
 					'#markup' => '<h1>Relation</h1>',
 					);
 		  
-		  $form['relations_fieldset']['labels']['mapped_class_label'] = array (
-					'#markup' => '<h1>Mapped Class</h1>',
+		  $form['relations_fieldset']['labels']['target_class_label'] = array (
+					'#markup' => '<h1>Target Class</h1>',
 					);
 		  
-		  $form['relations_fieldset']['labels']['mapped_property_label'] = array (
-					'#markup' => '<h1>Mapped Property</h1>',
+		  $form['relations_fieldset']['labels']['target_property_label'] = array (
+					'#markup' => '<h1>Target Property</h1>',
 					);
 		  
-		  $form['relations_fieldset']['labels']['mapped_property_label'] = array (
-					'#markup' => '<h1>Mapped Property</h1>',
+		  $form['relations_fieldset']['labels']['target_property_label'] = array (
+					'#markup' => '<h1>Target Property</h1>',
 					);
 		  
 		  $form['relations_fieldset']['labels']['syntax_mapping_label'] = array (
@@ -150,7 +150,7 @@ function mapping_basic($form, &$form_state) {
 		  	  		'#markup' => '<h2>Relationships:</h2>',
 					);
 
-				$form['relations_fieldset'][$i]['core_class'] = array (
+				$form['relations_fieldset'][$i]['source_class'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 /*					'#ajax' => array(
@@ -161,7 +161,7 @@ function mapping_basic($form, &$form_state) {
 						),*/
 					);
 				
-				$form['relations_fieldset'][$i]['core_property'] = array (
+				$form['relations_fieldset'][$i]['source_property'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 /*						'#ajax' => array(
@@ -183,7 +183,7 @@ function mapping_basic($form, &$form_state) {
 						),*/
 					);
 				
-				$form['relations_fieldset'][$i]['mapped_class'] = array (
+				$form['relations_fieldset'][$i]['target_class'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 /*						'#ajax' => array(
@@ -195,7 +195,7 @@ function mapping_basic($form, &$form_state) {
 					
 					);
 				
-				$form['relations_fieldset'][$i]['mapped_property'] = array (
+				$form['relations_fieldset'][$i]['target_property'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 /*						'#ajax' => array(
@@ -213,11 +213,11 @@ function mapping_basic($form, &$form_state) {
 				//URI's if needed 
 				
 				$form['relations_fieldset'][$i]['uri_label'] = array (
-		  	  		'#markup' => '<h2>Uri\'s: </h2>',
+		  	  		'#markup' => '<h2>URIs: </h2>',
 					);
 				
 				
-					$form['relations_fieldset'][$i]['core_class_URI'] = array (
+					$form['relations_fieldset'][$i]['source_class_URI'] = array (
 					'#title_display'=> 'before',
 					'#type' => 'textfield',
 					'#size' => '10',
@@ -228,7 +228,7 @@ function mapping_basic($form, &$form_state) {
 								),
 					);
 				
-				$form['relations_fieldset'][$i]['core_property_URI'] = array (
+				$form['relations_fieldset'][$i]['source_property_URI'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 					'#states' => array(
@@ -244,7 +244,7 @@ function mapping_basic($form, &$form_state) {
 					 '#attributes' => array('hidden' => 'hidden'),
 					);
 				
-				$form['relations_fieldset'][$i]['mapped_class_URI'] = array (
+				$form['relations_fieldset'][$i]['target_class_URI'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 					'#states' => array(
@@ -254,7 +254,7 @@ function mapping_basic($form, &$form_state) {
 								),
 					);
 				
-				$form['relations_fieldset'][$i]['mapped_property_URI'] = array (
+				$form['relations_fieldset'][$i]['target_property_URI'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 					'#states' => array(
@@ -266,7 +266,7 @@ function mapping_basic($form, &$form_state) {
 				
 				
 				$form['relations_fieldset'][$i]['known_uri'] = array (
-		  	  		'#markup' => '<h3> only fill in the uri\'s if they are known </h3>',
+		  	  		'#markup' => '<h3> only fill in the URIs if they are known </h3>',
 				);
 					
 				$form['relations_fieldset'][$i]['line'] = array (
@@ -390,44 +390,44 @@ function mapping_generate_uri($form, &$form_state ){
 
 	for($i = 0; $i < $form_state['num_relations']; $i++){
 		
-		$testempty1= trim($form_state['values']['relations_fieldset'][$i]['core_class']);
-		$testempty2= trim($form_state['values']['relations_fieldset'][$i]['core_class_URI']);
+		$testempty1= trim($form_state['values']['relations_fieldset'][$i]['source_class']);
+		$testempty2= trim($form_state['values']['relations_fieldset'][$i]['source_class_URI']);
 		if(!empty($testempty1) && empty($testempty2)) {
-			$coreclassUri = $root.'mapping/'.$datamodelURI1.'/class/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['core_class']);
-			unset($form_state['input']['relations_fieldset'][$i]['core_class_URI']); 
-			$form_state['input']['relations_fieldset'][$i]['core_class_URI'] = $coreclassUri;	
+			$sourceclassUri = $root.'mapping/'.$datamodelURI1.'/class/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['source_class']);
+			unset($form_state['input']['relations_fieldset'][$i]['source_class_URI']); 
+			$form_state['input']['relations_fieldset'][$i]['source_class_URI'] = $sourceclassUri;	
 			
 		}
 		
-		$testempty1= trim($form_state['values']['relations_fieldset'][$i]['core_property']);
-		$testempty2= trim($form_state['values']['relations_fieldset'][$i]['core_property_URI']);
+		$testempty1= trim($form_state['values']['relations_fieldset'][$i]['source_property']);
+		$testempty2= trim($form_state['values']['relations_fieldset'][$i]['source_property_URI']);
 		
 		if(!empty($testempty1)&& empty($testempty2)){
-		$corepropertyUri = $root.'mapping/'.$datamodelURI1.'/property/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['core_property']);
-		unset($form_state['input']['relations_fieldset'][$i]['core_property_URI']);
-		$form_state['input']['relations_fieldset'][$i]['core_property_URI'] = $corepropertyUri;	 
-		//$form['relations_fieldset'][$i]['core_property_URI']['#value']= $corepropertyUri;
+		$sourcepropertyUri = $root.'mapping/'.$datamodelURI1.'/property/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['source_property']);
+		unset($form_state['input']['relations_fieldset'][$i]['source_property_URI']);
+		$form_state['input']['relations_fieldset'][$i]['source_property_URI'] = $sourcepropertyUri;	 
+		//$form['relations_fieldset'][$i]['source_property_URI']['#value']= $sourcepropertyUri;
 		}
 	
 	
-		$testempty1= trim($form_state['values']['relations_fieldset'][$i]['mapped_class']);
-		$testempty2= trim($form_state['values']['relations_fieldset'][$i]['mapped_class_URI']);
+		$testempty1= trim($form_state['values']['relations_fieldset'][$i]['target_class']);
+		$testempty2= trim($form_state['values']['relations_fieldset'][$i]['target_class_URI']);
 		
 		if(!empty($testempty1)&& empty($testempty2)){
-		$mappedclassUri = $root.'mapping/'.$datamodelURI2.'/class/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['mapped_class']);
-		unset($form_state['input']['relations_fieldset'][$i]['mapped_class_URI']); 
-		$form_state['input']['relations_fieldset'][$i]['mapped_class_URI'] = $mappedclassUri;	
-		//$form['relations_fieldset'][$i]['mapped_class_URI']['#value']= $mappedclassUri;
+		$targetclassUri = $root.'mapping/'.$datamodelURI2.'/class/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['target_class']);
+		unset($form_state['input']['relations_fieldset'][$i]['target_class_URI']); 
+		$form_state['input']['relations_fieldset'][$i]['target_class_URI'] = $targetclassUri;	
+		//$form['relations_fieldset'][$i]['target_class_URI']['#value']= $targetclassUri;
 		}
 		
-		$testempty1= trim($form_state['values']['relations_fieldset'][$i]['mapped_property']);
-		$testempty2= trim($form_state['values']['relations_fieldset'][$i]['mapped_property_URI']);
+		$testempty1= trim($form_state['values']['relations_fieldset'][$i]['target_property']);
+		$testempty2= trim($form_state['values']['relations_fieldset'][$i]['target_property_URI']);
 		
 		if(!empty($testempty1)&& empty($testempty2)) {
-		$mappedpropertyUri = $root.'mapping/'.$datamodelURI2.'/property/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['mapped_property']);
-		unset($form_state['input']['relations_fieldset'][$i]['mapped_property_URI']);
-		$form_state['input']['relations_fieldset'][$i]['mapped_property_URI'] = $mappedpropertyUri;	
-		//$form['relations_fieldset'][$i]['mapped_property_URI']['#value']= $mappedpropertyUri;
+		$targetpropertyUri = $root.'mapping/'.$datamodelURI2.'/property/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['target_property']);
+		unset($form_state['input']['relations_fieldset'][$i]['target_property_URI']);
+		$form_state['input']['relations_fieldset'][$i]['target_property_URI'] = $targetpropertyUri;	
+		//$form['relations_fieldset'][$i]['target_property_URI']['#value']= $targetpropertyUri;
 		}			
 	
 	}
@@ -477,14 +477,14 @@ function mapping_basic_validate($form, &$form_state){
 	if($option1== "add new"){
 		$testempty= trim($form_state['values']['wrapper_datamodels']['datamodel_fieldset1']['datamodel1']);
   	  if(empty($testempty)){
-  	  	  form_set_error('postal', t('datamodel 1 name is required.'));
+  	  	  form_set_error('postal', t('source datamodel name is required.'));
   	  	  
  	 	 $foo= TRUE;
  	  }
  	  
  	  $testempty= trim($form_state['values']['wrapper_datamodels']['datamodel_fieldset1']['URI1']);
  	   if(empty($testempty)){
-  	  	  form_set_error('postal', t('datamodel uri is required.'));
+  	  	  form_set_error('postal', t('source datamodel uri is required.'));
  	 	 $foo= TRUE;
  	  }
   }
@@ -492,37 +492,37 @@ function mapping_basic_validate($form, &$form_state){
   if($option2== "add new"){
   	  $testempty= trim($form_state['values']['wrapper_datamodels']['datamodel_fieldset2']['datamodel2']);
   	  if(empty($testempty)){
-  	  	 form_set_error('postal', t('datamodel 2 name is required.'));
+  	  	 form_set_error('postal', t('target datamodel name is required.'));
  	 	 $foo= TRUE;
  	  }
  	  
  	  	 $testempty= trim($form_state['values']['wrapper_datamodels']['datamodel_fieldset2']['URI2']);
  	   if(empty($testempty)){
-  	  	  form_set_error('postal', t('datamodel uri is required.'));
+  	  	  form_set_error('postal', t('target datamodel uri is required.'));
  	 	 $foo= TRUE;
  	  }
   }
 
 	for($i = 0; $i < $form_state['num_relations']; $i++){
- 	  $testempty1= trim($form_state['values']['relations_fieldset'][$i]['core_property']);
- 	  $testempty2= trim($form_state['values']['relations_fieldset'][$i]['mapped_class']);
- 	  $testempty3= trim($form_state['values']['relations_fieldset'][$i]['core_class']);
+ 	  $testempty1= trim($form_state['values']['relations_fieldset'][$i]['source_property']);
+ 	  $testempty2= trim($form_state['values']['relations_fieldset'][$i]['target_class']);
+ 	  $testempty3= trim($form_state['values']['relations_fieldset'][$i]['source_class']);
  	  
  	  if(empty($testempty3)) {
- 	 	 form_set_error('postal', t('The Core class is required.'));
+ 	 	 form_set_error('postal', t('The source class is required.'));
  	 	 $foo= TRUE;
  	}
  	
 		if(empty($testempty2)) {
-			 form_set_error('postal', t('The mapped class is required.'));
+			 form_set_error('postal', t('The target class is required.'));
 			 $foo= TRUE;
 		}
 		
- 	  $testempty4= trim($form_state['values']['relations_fieldset'][$i]['core_property']);
- 	  $testempty5= trim($form_state['values']['relations_fieldset'][$i]['mapped_property']);
+ 	  $testempty4= trim($form_state['values']['relations_fieldset'][$i]['source_property']);
+ 	  $testempty5= trim($form_state['values']['relations_fieldset'][$i]['target_property']);
  	  
  	if(!empty($testempty4) && empty($testempty5)) {
- 	 	 form_set_error('postal', t('The mapped property is required.'));
+ 	 	 form_set_error('postal', t('The target property is required.'));
  	 	 $foo= TRUE;
  	}
  	
@@ -532,12 +532,12 @@ function mapping_basic_validate($form, &$form_state){
  	 	 form_set_error('postal', t('The relation is required.'));
  	 	 $foo= TRUE;
  	}
- 	 $testempty1= trim($form_state['values']['relations_fieldset'][$i]['mapped_property']);
- 	 $testempty2= trim($form_state['values']['relations_fieldset'][$i]['core_class']);
- 	 $testempty3= trim($form_state['values']['relations_fieldset'][$i]['mapped_class']);
+ 	 $testempty1= trim($form_state['values']['relations_fieldset'][$i]['target_property']);
+ 	 $testempty2= trim($form_state['values']['relations_fieldset'][$i]['source_class']);
+ 	 $testempty3= trim($form_state['values']['relations_fieldset'][$i]['target_class']);
  	  
  	if( !empty($testempty3) && empty( $testempty2) ) {
- 	 	 form_set_error('postal', t('The mapped class is required.'));
+ 	 	 form_set_error('postal', t('The target class is required.'));
  	 	 $foo= TRUE;
  	}
  	
@@ -587,10 +587,10 @@ function mapping_basic_submit($form, &$form_state) {
  	 
 	
 	$relation_choice= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']];
-	$coreclass= $form_state['values']['relations_fieldset'][$i]['core_class'];
- 	$coreclassuri=$form_state['values']['relations_fieldset'][$i]['core_class_URI'];
-	$coreproperty=$form_state['values']['relations_fieldset'][$i]['core_property'];
-	$corepropertyuri=$form_state['values']['relations_fieldset'][$i]['core_property_URI'];
+	$sourceclass= $form_state['values']['relations_fieldset'][$i]['source_class'];
+ 	$sourceclassuri=$form_state['values']['relations_fieldset'][$i]['source_class_URI'];
+	$sourceproperty=$form_state['values']['relations_fieldset'][$i]['source_property'];
+	$sourcepropertyuri=$form_state['values']['relations_fieldset'][$i]['source_property_URI'];
 	$relation= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']];
 	if($relation_choice=='Exact match')
 		$relationuri='skos:exactMatch';
@@ -602,10 +602,10 @@ function mapping_basic_submit($form, &$form_state) {
 		$relationuri='skos:broadMatch';
 	if($relation_choice=='Related match')
 		$relationuri='skos:relatedMatch';
-	$mappedclass= $form_state['values']['relations_fieldset'][$i]['mapped_class'];
-	$mappedclassuri= $form_state['values']['relations_fieldset'][$i]['mapped_class_URI'];
-	$mappedproperty= $form_state['values']['relations_fieldset'][$i]['mapped_property'];
-	$mappedpropertyuri= $form_state['values']['relations_fieldset'][$i]['mapped_property_URI'];
+	$targetclass= $form_state['values']['relations_fieldset'][$i]['target_class'];
+	$targetclassuri= $form_state['values']['relations_fieldset'][$i]['target_class_URI'];
+	$targetproperty= $form_state['values']['relations_fieldset'][$i]['target_property'];
+	$targetpropertyuri= $form_state['values']['relations_fieldset'][$i]['target_property_URI'];
 	
 	
 	if(!$form_state['values']['relations_fieldset'][$i]['syntax_mapping'])
@@ -618,16 +618,16 @@ function mapping_basic_submit($form, &$form_state) {
     	
       'did1' => $datamodel1,
       'did2' => $datamodel2,
-      'coreclass' =>$coreclass, 
-      'coreclassuri' => $coreclassuri,
-      'coreproperty' =>$coreproperty,
-      'corepropertyuri' =>$corepropertyuri,
+      'coreclass' =>$sourceclass, 
+      'coreclassuri' => $sourceclassuri,
+      'coreproperty' =>$sourceproperty,
+      'corepropertyuri' =>$sourcepropertyuri,
       'relation' =>$relation,
       'relationuri' =>$relationuri,
-      'mappedclass' =>$mappedclass,
-      'mappedclassuri' =>$mappedclassuri,
-      'mappedproperty' =>  $mappedproperty,
-      'mappedpropertyuri' =>  $mappedpropertyuri,
+      'mappedclass' =>$targetclass,
+      'mappedclassuri' =>$targetclassuri,
+      'mappedproperty' =>  $targetproperty,
+      'mappedpropertyuri' =>  $targetpropertyuri,
       'synmap' =>$synmap,
       ))->execute();
     
@@ -650,7 +650,7 @@ function mapping_basic_submit($form, &$form_state) {
 if(easyrdf()){
 		//the $endpoint should point to the correct address
 		$endpoint= 'http://52.50.205.146/sparql-graph-crud';
- 		$gs = new EasyRdf_GraphStore($endpoint);
+ 		$gs = new EasyRdf_GraphStore($endpoIint);
  		$graph1 = new EasyRdf_Graph();
  		//datamodel definition
  		$graph1->addResource('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
@@ -661,31 +661,36 @@ if(easyrdf()){
  		//datamodel, classes & properties
  		$graph1->addResource($datamodelURI1, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://mapping.semic.eu/def#DataModel');
  		$graph1->addResource($datamodelURI2, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://mapping.semic.eu/def#DataModel');
- 		$graph1->addResource($corepropertyuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property');
- 		$graph1->addResource($mappedpropertyuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property');
- 		$graph1->addResource($coreclassuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
- 		$graph1->addResource($mappedclassuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
+ 		if($sourcepropertyuri!=''){
+ 		$graph1->addResource($sourcepropertyuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property');
+ 		}
+ 		if($targetpropertyuri!=''){
+ 		$graph1->addResource($targetpropertyuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property');
+ 		}
+ 		$graph1->addResource($sourceclassuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
+ 		$graph1->addResource($targetclassuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
  		 
  		//ispartof
  		 
- 		$graph1->addResource($coreclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI1);
- 		$graph1->addResource($mappedclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI2);
- 		$graph1->addResource($corepropertyuri, 'http://purl.org/dc/terms/isPartOf', $coreclassuri);
- 		$graph1->addResource($mappedpropertyuri, 'http://purl.org/dc/terms/isPartOf', $mappedclassuri);
+ 		$graph1->addResource($sourceclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI1);
+ 		$graph1->addResource($targetclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI2);
  		
- 		if($coreproperty =='' && $mappedpropertyuri ==''){
- 			$graph1->addResource($coreclassuri,$relationuri, $mappedclassuri); 
+ 		if($sourceproperty =='' && $targetpropertyuri ==''){
+ 			$graph1->addResource($sourceclassuri,$relationuri, $targetclassuri); 
  		}
  		else{
- 			$graph1->addResource($corepropertyuri,$relationuri, $mappedpropertyuri); 
+ 			$graph1->addResource($sourcepropertyuri,$relationuri, $targetpropertyuri);
+ 		$graph1->addResource($sourcepropertyuri, 'http://purl.org/dc/terms/isPartOf', $sourceclassuri);
+ 		$graph1->addResource($targetpropertyuri, 'http://purl.org/dc/terms/isPartOf', $targetclassuri);
  		}
  		
  		$gs->insert($graph1,'http://cpsv-ap_mapping.eu');
  	
- 	drupal_set_message('mapping added');
-	 	
 	}
  }
+ 
+ 	drupal_set_message('Mapping submitted');
+	 	
 }
 
 
