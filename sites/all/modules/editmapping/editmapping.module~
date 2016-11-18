@@ -443,7 +443,7 @@ function editmapping_exportfields($form, &$form_state) {
 	curl_setopt($ch,CURLOPT_URL,$searchUrl);
 	curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
 	$response=curl_exec($ch);
-	curl_close($ch);
+	curl_close($ch);	
 	
 	header("Content-Disposition: attachment; filename=\"export.rdf\"");
 	header("Content-Type: text/plain");
@@ -558,14 +558,8 @@ function editmapping_basic_submit($form, &$form_state) {
 		$gs = new EasyRdf_Sparql_Client($endpoint);
 		
 		$oldvalue = $data[$i]['sourceclassuri'];
-		
-		drupal_set_message("geg:".$sourceclassuri);
-		 
-		drupal_set_message("test:".$oldvalue);
- 	
  	if($data[$i]['sourceclassuri'] != $sourceclassuri){
  		
- 	drupal_set_message("query werkt");
  	$query = 'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {<'.$oldvalue.'> ?p ?o}
 				INSERT {<'.$sourceclassuri.'> ?p ?o}
@@ -582,7 +576,7 @@ function editmapping_basic_submit($form, &$form_state) {
 				WHERE {?s ?p <'.$oldvalue.'>}';
  
 	$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-	drupal_set_message($searchUrl);
+
 	$ch = curl_init();
 	curl_setopt($ch,CURLOPT_URL,$searchUrl);
 	curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
@@ -613,7 +607,7 @@ function editmapping_basic_submit($form, &$form_state) {
 			
 						
 		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-		drupal_set_message($searchUrl);
+		
 		$ch = curl_init();
 		curl_setopt($ch,CURLOPT_URL,$searchUrl);
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
@@ -640,7 +634,7 @@ function editmapping_basic_submit($form, &$form_state) {
 				WHERE {?s ?p <'.$oldvalue.'>}';
 				
 		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-		drupal_set_message($searchUrl);
+		
 		$ch = curl_init();
 		curl_setopt($ch,CURLOPT_URL,$searchUrl);
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
@@ -668,7 +662,6 @@ function editmapping_basic_submit($form, &$form_state) {
 		
 		
 		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-		drupal_set_message($searchUrl);
 		$ch = curl_init();
 		curl_setopt($ch,CURLOPT_URL,$searchUrl);
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
@@ -695,7 +688,7 @@ function editmapping_basic_submit($form, &$form_state) {
 				WHERE {?s ?p <'.$oldvalue.'>}';
 				
 		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-		drupal_set_message($searchUrl);
+
 		$ch = curl_init();
 		curl_setopt($ch,CURLOPT_URL,$searchUrl);
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
@@ -705,38 +698,23 @@ function editmapping_basic_submit($form, &$form_state) {
  	}
  
  	//DELETE MAPPING IN TRIPLE STORE
-$aantal =$gs->countTriples('?s ?p <'.$oldvalue.'>');
-	drupal_set_message('aantal:'.$aantal);
+
  	if($deletemapping == TRUE){
  		//delete targetproperty
 
- 		$oldvalue = $data[$i]['sourceclassuri'];
- 		
+ 		$oldsourceclassuri = $data[$i]['sourceclassuri'];
+ 		$oldtargetclassuri = $data[$i]['targetclassuri'];
  		
  			$query =
- 			'DELETE WHERE {
+			'DELETE WHERE {
  					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s ?p <'.$oldvalue.'>}}			
+ 					{<'.$oldsourceclassuri.'> ?p <'.$oldtargetclassuri.'>}}
  			DELETE WHERE {
  					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s <'.$oldvalue.'> ?o}}					
- 			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{ <'.$oldvalue.'> ?p ?o}}
- 			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s ?p <'.$sourceclassuri.'>}}				
- 			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s <'.$sourceclassuri.'> ?o}}
- 			
- 			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{ <'.$sourceclassuri.'> ?p ?o}}';
+ 					{<'.$sourceclassuri.'> ?p <'.$targetclassuri.'> }}';
  					
  		
 		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-		drupal_set_message($searchUrl);
 		$ch = curl_init();
 		curl_setopt($ch,CURLOPT_URL,$searchUrl);
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
@@ -744,101 +722,26 @@ $aantal =$gs->countTriples('?s ?p <'.$oldvalue.'>');
 		curl_close($ch);
 		
  		//sourceproperty
- 		$oldvalue = $data[$i]['sourcepropertyuri'];
- 		
- 		
- 		$query=
-			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s ?p <'.$oldvalue.'>}}
- 			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s <'.$oldvalue.'> ?o}}				
- 			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{ <'.$oldvalue.'> ?p ?o}}
- 			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s ?p <'.$sourcepropertyuri.'>}}
- 			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s <'.$sourcepropertyuri.'> ?o}}
- 			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{ <'.$sourcepropertyuri.'> ?p ?o}}';
- 		
- 					
-		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-		drupal_set_message($searchUrl);
-		$ch = curl_init();
-		curl_setopt($ch,CURLOPT_URL,$searchUrl);
-		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
-		$response=curl_exec($ch);
-		curl_close($ch);
-		
- 		//targetclass 
- 		$oldvalue = $data[$i]['targetclassuri'];
+ 		$oldsourceproperty = $data[$i]['sourcepropertyuri'];
+ 		$oldtargetproperty = $data[$i]['targetpropertyuri'];
  		
  		$query=
 			'DELETE WHERE {
  					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s ?p <'.$oldvalue.'>}}
-			DELETE WHERE {
+ 					{<'.$oldsourceproperty.'> ?p <'.$oldtargetproperty.'>}}
+ 			DELETE WHERE {
  					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s <'.$oldvalue.'> ?o}}	
-			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{ <'.$oldvalue.'> ?p ?o}}
-			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s ?p <'.$targetclassuri.'>}}
-			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s <'.$targetclassuri.'> ?o}}
-			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{ <'.$targetclassuri.'> ?p ?o}}';
+ 					{<'.$sourcepropertyuri.'> ?p <'.$targetpropertyuri.'> }}';
  		
  					
 		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-		drupal_set_message($searchUrl);
+	
 		$ch = curl_init();
 		curl_setopt($ch,CURLOPT_URL,$searchUrl);
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
 		$response=curl_exec($ch);
 		curl_close($ch);
-		
- 		//targetproperty
- 		$oldvalue = $data[$i]['targetpropertyuri'];
- 		
- 		$query =
-			'DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s ?p <'.$oldvalue.'>}}
- 			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s <'.$oldvalue.'> ?o}}
-			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{ <'.$oldvalue.'> ?p ?o}}
-			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s ?p <'.$targetpropertyuri.'>}}
- 			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{?s <'.$targetpropertyuri.'> ?o}}	
-			DELETE WHERE {
- 					GRAPH <http://cpsv-ap_mapping.eu>
- 					{ <'.$targetpropertyuri.'> ?p ?o}}';
  					
- 					
-		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-		drupal_set_message($searchUrl);
-		$ch = curl_init();
-		curl_setopt($ch,CURLOPT_URL,$searchUrl);
-		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
-		$response=curl_exec($ch);
-		curl_close($ch);
  				
  				
  		}

@@ -124,12 +124,14 @@ function mapping_basic($form, &$form_state) {
 					'#markup' => '<h1>Relation</h1>',
 					);
 		  
-		  $form['relations_fieldset']['labels']['target_class_label'] = array (
-					'#markup' => '<h1>Target Class</h1>',
-					);
-		  
 		  $form['relations_fieldset']['labels']['target_property_label'] = array (
 					'#markup' => '<h1>Target Property</h1>',
+					);
+		  
+		  
+		  
+		  $form['relations_fieldset']['labels']['target_class_label'] = array (
+					'#markup' => '<h1>Target Class</h1>',
 					);
 		  
 		  $form['relations_fieldset']['labels']['target_property_label'] = array (
@@ -183,6 +185,18 @@ function mapping_basic($form, &$form_state) {
 						),*/
 					);
 				
+				
+				$form['relations_fieldset'][$i]['target_property'] = array (
+					'#type' => 'textfield',
+					'#size' => '10',
+/*						'#ajax' => array(
+						'event' => 'change',
+						'callback' => 'mapping_generate_uri',
+						'wrapper' => 'relations-fieldset-wrapper',
+						'method' => 'replace',
+						), */
+					);
+				
 				$form['relations_fieldset'][$i]['target_class'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
@@ -195,16 +209,6 @@ function mapping_basic($form, &$form_state) {
 					
 					);
 				
-				$form['relations_fieldset'][$i]['target_property'] = array (
-					'#type' => 'textfield',
-					'#size' => '10',
-/*						'#ajax' => array(
-						'event' => 'change',
-						'callback' => 'mapping_generate_uri',
-						'wrapper' => 'relations-fieldset-wrapper',
-						'method' => 'replace',
-						), */
-					);
 				
 				$form['relations_fieldset'][$i]['syntax_mapping'] = array (
 					'#type' => 'checkbox',				
@@ -244,7 +248,8 @@ function mapping_basic($form, &$form_state) {
 					 '#attributes' => array('hidden' => 'hidden'),
 					);
 				
-				$form['relations_fieldset'][$i]['target_class_URI'] = array (
+				
+				$form['relations_fieldset'][$i]['target_property_URI'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 					'#states' => array(
@@ -253,8 +258,7 @@ function mapping_basic($form, &$form_state) {
 									),
 								),
 					);
-				
-				$form['relations_fieldset'][$i]['target_property_URI'] = array (
+				$form['relations_fieldset'][$i]['target_class_URI'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 					'#states' => array(
@@ -557,22 +561,20 @@ function mapping_basic_submit($form, &$form_state) {
 	$select1 = $form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
 	$select2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
 	
-
 	
 	if($select1== "add new") {
+		
 		$datamodel1=$form_state['values']['wrapper_datamodels']['datamodel_fieldset1']['datamodel1'];
 		$datamodelURI1= $form_state['values']['wrapper_datamodels']['datamodel_fieldset1']['URI1'];
 	}
 	else {
 		$datamodel1=$select1;
 		$result1= db_query('SELECT uri FROM datamodels WHERE name= :datamodel1', array(':datamodel1' => $datamodel1));
-		
-		$datamodelURI1= $result1->fetchField(0);
-		
-		
+		$datamodelURI1= $result1->fetchField(0);	
 	}
 		
 	if($select2== "add new") {
+		drupal_set_message("add new");
 		$datamodel2=$form_state['values']['wrapper_datamodels']['datamodel_fieldset2']['datamodel2'];
 		$datamodelURI2= $form_state['values']['wrapper_datamodels']['datamodel_fieldset2']['URI2'];
 	}
@@ -591,7 +593,9 @@ function mapping_basic_submit($form, &$form_state) {
  	$sourceclassuri=$form_state['values']['relations_fieldset'][$i]['source_class_URI'];
 	$sourceproperty=$form_state['values']['relations_fieldset'][$i]['source_property'];
 	$sourcepropertyuri=$form_state['values']['relations_fieldset'][$i]['source_property_URI'];
+
 	$relation= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']];
+	
 	if($relation_choice=='Exact match')
 		$relationuri='skos:exactMatch';
 	if($relation_choice=='Close match')
@@ -602,15 +606,27 @@ function mapping_basic_submit($form, &$form_state) {
 		$relationuri='skos:broadMatch';
 	if($relation_choice=='Related match')
 		$relationuri='skos:relatedMatch';
+	
 	$targetclass= $form_state['values']['relations_fieldset'][$i]['target_class'];
 	$targetclassuri= $form_state['values']['relations_fieldset'][$i]['target_class_URI'];
 	$targetproperty= $form_state['values']['relations_fieldset'][$i]['target_property'];
+		if($targetproperty !='') {
 	$targetpropertyuri= $form_state['values']['relations_fieldset'][$i]['target_property_URI'];
-	
-	
-	if(!$form_state['values']['relations_fieldset'][$i]['syntax_mapping'])
-		$synmap= 0;
-	else
+		}
+	drupal_set_message();
+		drupal_set_message("|".$sourceclassuri."|");
+		
+		drupal_set_message("|".$sourcepropertyuri."|");
+		
+		drupal_set_message("|".$targetclassuri."|");
+		
+		drupal_set_message("|".$targetpropertyuri."|");
+		
+		drupal_set_message("|".$relationuri."|");
+		drupal_set_message("|".$datamodelURI2."|");
+		drupal_set_message("|".$datamodelURI1."|");
+		
+
 		$synmap= $form_state['values']['relations_fieldset'][$i]['syntax_mapping'];
 
 	db_insert('relations')
@@ -631,11 +647,12 @@ function mapping_basic_submit($form, &$form_state) {
       'synmap' =>$synmap,
       ))->execute();
     
+      
     if($select1 =="add new") {
     db_insert('datamodels')
     ->fields(array(
     	'name' =>$datamodel1,
-    	'uri' =>$form_state['values']['wrapper_datamodels']['datamodel_fieldset1']['URI1'],
+    	'uri' =>$datamodelURI1, 
     ))->execute();
     }
     
@@ -643,7 +660,7 @@ function mapping_basic_submit($form, &$form_state) {
     	db_insert('datamodels')
     	->fields(array(
     		'name' =>$datamodel2,
-    		'uri' =>$form_state['values']['wrapper_datamodels']['datamodel_fieldset2']['URI2'],
+    		'uri' =>$datamodelURI1, 
     	))->execute();
     }
       
@@ -653,6 +670,7 @@ if(easyrdf()){
  		$gs = new EasyRdf_GraphStore($endpoint);
  		$graph1 = new EasyRdf_Graph();
  		//datamodel definition
+ 		
  		$graph1->addResource('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
  		$graph1->addResource('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2004/02/skos/core#Concept');
  		$graph1->add('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/2000/01/rdf-schema#label', "Core Data Model");
@@ -672,19 +690,19 @@ if(easyrdf()){
  		 
  		//ispartof
  		 
- 		$graph1->addResource($sourceclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI1);
- 		$graph1->addResource($targetclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI2);
- 		
+ 	
  		if($sourceproperty =='' && $targetpropertyuri ==''){
  			$graph1->addResource($sourceclassuri,$relationuri, $targetclassuri); 
  		}
  		else{
  			$graph1->addResource($sourcepropertyuri,$relationuri, $targetpropertyuri);
- 		$graph1->addResource($sourcepropertyuri, 'http://purl.org/dc/terms/isPartOf', $sourceclassuri);
- 		$graph1->addResource($targetpropertyuri, 'http://purl.org/dc/terms/isPartOf', $targetclassuri);
+ 			$graph1->addResource($sourcepropertyuri, 'http://purl.org/dc/terms/isPartOf', $sourceclassuri);
+ 			$graph1->addResource($targetpropertyuri, 'http://purl.org/dc/terms/isPartOf', $targetclassuri);
+ 			
  		}
  		
- 		$gs->insert($graph1,'http://cpsv-ap_mapping.eu');
+ 		drupal_set_message($graph1->dump());
+ 		$gs->insert($graph1, 'http://cpsv-ap_mapping.eu');
  	
 	}
  }

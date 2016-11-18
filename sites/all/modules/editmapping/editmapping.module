@@ -443,7 +443,7 @@ function editmapping_exportfields($form, &$form_state) {
 	curl_setopt($ch,CURLOPT_URL,$searchUrl);
 	curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
 	$response=curl_exec($ch);
-	curl_close($ch);
+	curl_close($ch);	
 	
 	header("Content-Disposition: attachment; filename=\"export.rdf\"");
 	header("Content-Type: text/plain");
@@ -476,14 +476,28 @@ function editmapping_basic_submit($form, &$form_state) {
 	if($deletedatamodel == TRUE){
 		if($datamodel1empty->rowCount() == 0  ){
 			drupal_set_message( $datamodel1.' was deleted'); 
-		}else{
-			drupal_set_message( $datamodel1.' was not deleted as it is still used in other mappings'); 
+			
+		}else{ 	
+			
+		db_insert('datamodels')
+			->fields(array(
+				'name' => $datamodel1,
+				'uri' => $datamodel1uri,
+				))->execute();
+      drupal_set_message( $datamodel1.' was not deleted as it is still used in other mappings');
+			
 		}
 	
 		if($datamodel2empty->rowCount() == 0 ){
 			drupal_set_message( $datamodel2.' was deleted'); 
 		}else{
-			drupal_set_message( $datamodel2.' was not deleted as it is still used in other mappings');
+			
+			db_insert('datamodels')
+			->fields(array(
+			  'name' => $datamodel2,
+			  'uri' => $datamodel2uri,
+			  ))->execute();
+      drupal_set_message( $datamodel2.' was not deleted as it is still used in other mappings');
 		}
 	}
  	
@@ -558,14 +572,8 @@ function editmapping_basic_submit($form, &$form_state) {
 		$gs = new EasyRdf_Sparql_Client($endpoint);
 		
 		$oldvalue = $data[$i]['sourceclassuri'];
-		
-		drupal_set_message("geg:".$sourceclassuri);
-		 
-		drupal_set_message("test:".$oldvalue);
- 	
  	if($data[$i]['sourceclassuri'] != $sourceclassuri){
  		
- 	drupal_set_message("query werkt");
  	$query = 'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {<'.$oldvalue.'> ?p ?o}
 				INSERT {<'.$sourceclassuri.'> ?p ?o}
@@ -582,7 +590,7 @@ function editmapping_basic_submit($form, &$form_state) {
 				WHERE {?s ?p <'.$oldvalue.'>}';
  
 	$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-	drupal_set_message($searchUrl);
+
 	$ch = curl_init();
 	curl_setopt($ch,CURLOPT_URL,$searchUrl);
 	curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
@@ -613,7 +621,7 @@ function editmapping_basic_submit($form, &$form_state) {
 			
 						
 		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-		drupal_set_message($searchUrl);
+		
 		$ch = curl_init();
 		curl_setopt($ch,CURLOPT_URL,$searchUrl);
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
@@ -640,7 +648,7 @@ function editmapping_basic_submit($form, &$form_state) {
 				WHERE {?s ?p <'.$oldvalue.'>}';
 				
 		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-		drupal_set_message($searchUrl);
+		
 		$ch = curl_init();
 		curl_setopt($ch,CURLOPT_URL,$searchUrl);
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
@@ -668,7 +676,6 @@ function editmapping_basic_submit($form, &$form_state) {
 		
 		
 		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-		drupal_set_message($searchUrl);
 		$ch = curl_init();
 		curl_setopt($ch,CURLOPT_URL,$searchUrl);
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
@@ -695,7 +702,7 @@ function editmapping_basic_submit($form, &$form_state) {
 				WHERE {?s ?p <'.$oldvalue.'>}';
 				
 		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-		drupal_set_message($searchUrl);
+
 		$ch = curl_init();
 		curl_setopt($ch,CURLOPT_URL,$searchUrl);
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
@@ -705,8 +712,7 @@ function editmapping_basic_submit($form, &$form_state) {
  	}
  
  	//DELETE MAPPING IN TRIPLE STORE
-$aantal =$gs->countTriples('?s ?p <'.$oldvalue.'>');
-	drupal_set_message('aantal:'.$aantal);
+
  	if($deletemapping == TRUE){
  		//delete targetproperty
 
@@ -723,7 +729,6 @@ $aantal =$gs->countTriples('?s ?p <'.$oldvalue.'>');
  					
  		
 		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-		drupal_set_message($searchUrl);
 		$ch = curl_init();
 		curl_setopt($ch,CURLOPT_URL,$searchUrl);
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
@@ -744,7 +749,7 @@ $aantal =$gs->countTriples('?s ?p <'.$oldvalue.'>');
  		
  					
 		$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-		drupal_set_message($searchUrl);
+	
 		$ch = curl_init();
 		curl_setopt($ch,CURLOPT_URL,$searchUrl);
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);

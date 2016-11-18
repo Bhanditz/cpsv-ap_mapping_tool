@@ -91,13 +91,15 @@ function CPSVAPmapping_basic($form, &$form_state) {
 					'#markup' => '<h1>Relation</h1>',
 					);
 		  
+		  $form['relations_fieldset']['labels']['target_property_label'] = array (
+					'#markup' => '<h1>Target Property</h1>',
+					);
+			
 		  $form['relations_fieldset']['labels']['target_class_label'] = array (
 					'#markup' => '<h1>Target Class</h1>',
 					);
 		  
-		  $form['relations_fieldset']['labels']['target_property_label'] = array (
-					'#markup' => '<h1>Target Property</h1>',
-					);
+		
 		  
 		  $form['relations_fieldset']['labels']['target_property_label'] = array (
 					'#markup' => '<h1>Target Property</h1>',
@@ -147,16 +149,18 @@ function CPSVAPmapping_basic($form, &$form_state) {
 					
 					);
 				
+					$form['relations_fieldset'][$i]['target_property'] = array (
+					'#type' => 'textfield',
+					'#size' => '10',
+					);
+					
 				$form['relations_fieldset'][$i]['target_class'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 					
 					);
 				
-				$form['relations_fieldset'][$i]['target_property'] = array (
-					'#type' => 'textfield',
-					'#size' => '10',
-					);
+			
 				
 				$form['relations_fieldset'][$i]['syntax_mapping'] = array (
 					'#type' => 'checkbox',				
@@ -188,6 +192,15 @@ function CPSVAPmapping_basic($form, &$form_state) {
 					 '#attributes' => array('hidden' => 'hidden'),
 					);
 				
+				$form['relations_fieldset'][$i]['target_property_URI'] = array (
+					'#type' => 'textfield',
+					'#size' => '10',
+					'#states' => array(
+								'readonly' => array(
+								':input[name="relations_fieldset['.$i.'][known_URI]"]' => array('checked' => FALSE),
+									),
+								),
+					);
 				$form['relations_fieldset'][$i]['target_class_URI'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
@@ -198,15 +211,7 @@ function CPSVAPmapping_basic($form, &$form_state) {
 								),
 					);
 				
-				$form['relations_fieldset'][$i]['target_property_URI'] = array (
-					'#type' => 'textfield',
-					'#size' => '10',
-					'#states' => array(
-								'readonly' => array(
-								':input[name="relations_fieldset['.$i.'][known_URI]"]' => array('checked' => FALSE),
-									),
-								),
-					);
+				
 				
 					
 				$form['relations_fieldset'][$i]['labels']['known_uri'] = array (
@@ -453,7 +458,6 @@ function CPSVAPmapping_basic_submit($form, &$form_state) {
 	$select2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
 		
 	if($select2== "add new") {
-		drupal_set_message("new");
 		$datamodel2=$form_state['values']['datamodel_fieldset2']['datamodel2'];
 		$datamodelURI2= $form_state['values']['datamodel_fieldset2']['URI2'];
 	}
@@ -463,6 +467,15 @@ function CPSVAPmapping_basic_submit($form, &$form_state) {
 		$datamodelURI2= $result2->fetchField(0);
 	}
 	
+	
+    if($select2 =='add new') {
+    	db_insert('datamodels')
+    	->fields(array(
+    		'name' =>$form_state['values']['datamodel_fieldset2']['datamodel2'],
+    		'uri' =>$form_state['values']['datamodel_fieldset2']['URI2'],
+    	))->execute();
+    }
+    
  for($i = 0; $i < $form_state['num_relations']; $i++){
  	 
  
@@ -525,14 +538,12 @@ function CPSVAPmapping_basic_submit($form, &$form_state) {
     	drupal_set_message('CPSVAPmapping relations are not filled in correctly');
     }
  
-    
-    if($select2 =='add new') {
-    	db_insert('datamodels')
-    	->fields(array(
-    		'name' =>$form_state['values']['datamodel_fieldset2']['datamodel2'],
-    		'uri' =>$form_state['values']['datamodel_fieldset2']['URI2'],
-    	))->execute();
-    }
+  $datamodelURI1	= preg_replace('/\s+/', '', $datamodelURI1);
+  $datamodelURI2	= preg_replace('/\s+/', '', $datamodelURI2);
+  $sourcepropertyuri= preg_replace('/\s+/', '', $sourcepropertyuri);
+  $targetpropertyuri= preg_replace('/\s+/', '', $targetpropertyuri);
+  $sourceclassuri	= preg_replace('/\s+/', '', $sourceclassuri);
+  $targetclassuri	= preg_replace('/\s+/', '', $targetclassuri);
        
  		
  
@@ -571,6 +582,8 @@ function CPSVAPmapping_basic_submit($form, &$form_state) {
  			$graph1->addResource($targetpropertyuri, 'http://purl.org/dc/terms/isPartOf', $targetclassuri);
  			$graph1->addResource($sourcepropertyuri,$relationuri, $targetpropertyuri); 
  		}
+ 		
+ 	
  		$gs->insert($graph1, 'http://cpsv-ap_mapping.eu');
  	
  		}
@@ -835,9 +848,15 @@ function CPSVAPmapping_get_properties_dropdown_options($key = '') {
     t('Public Organization') => drupal_map_assoc(
       array(
       	t(''),
-      	t('Identifier'),
+      	t('Has adress'),
+       	t('Identifier'),
+      	t('Name'),
+      	t('Type'),  
+      	t('provides'),
+      	t('plays role'),
       	t('Preferred Label'),
       	t('Spatial'),
+      	t('uses'),
         )
       ), 
     t('Channel') => drupal_map_assoc(
@@ -921,15 +940,12 @@ function CPSVAPmapping_getURIclass($class){
 	
 	$label = preg_replace('/\s+/', '', trim($class));
 	$label = strtolower($label);
-	drupal_set_message("label of ".$class." is ".$label);
-	
 	if(!array_search($label,$datamodellabelArrayLower))
 		$uri = ""; 
 	else
 		$uri = $uriArrayLower[array_search($label,$datamodellabelArrayLower)];
-	
-		drupal_set_message("url of ".$class." is ".$uri);
-	return $uri;
+		$urinowhitespace = preg_replace('/\s+/', '', $uri);
+	return $urinowhitespace;
 	
 }
 
@@ -938,21 +954,21 @@ function CPSVAPmapping_getURIproperty($class,$property){
 	
 	$datamodellabelArray = array("Address","AddressAddressArea","AddressAddressID","AddressAdminUnitL1","AddressAdminUnitL2","AddressFullAddress","AddressLocatorDesignator","AddressLocatorName","AddressPOBox","AddressPostCode","AddressPostName","AddressThoroughfare","Agent","AgenthasAddress","AgentIdentifier","AgentName","AgentplaysRole","AgentProvidesRequirementResponse","AgentSatisfiesCriterion","AgentType","Agentuses","BusinessEvent","ChangeEvent","ChangeEventhasFormalFramework","ChangeEventOriginalOrganisation","ChangeEventResultingOrganisation","Channel","Channelavailability","ChannelhasContactPoint","ChannelhasCost","ChannelhasInput","ChannelIdentifier","ChannelisOwnedBy","ChannelprocessingTime","ChannelType","Contact Point","ContactPointhasAddress","ContactPointhasEmail","ContactPointhasTelephone","ContactPointhasURL","ContactPointIdentifier","Cost","Costcurrency","CostDescription","CostIdentifier","Costvalue","Criterion","CriterioncriterionType","CriterionDescription","CriterionfulfilledByRequirementGroup","CriterionfulfilledIndicator","CriterionIdentifier","CriterionisDefinedInFormalFramework","CriterionName","CriterionRequirement","CriterionRequirementapplicableinPeriodOfTime","CriterionRequirementDescription","CriterionRequirementexpectedDataType","CriterionRequirementexpectedValue","CriterionRequirementIdentifier","CriterionRequirementlevelOfCertification","CriterionRequirementmaximumValue","CriterionRequirementmetByEvidence","CriterionRequirementminimumValue","CriterionRequirementName","CriterionRequirementtypeOfCopyQuality","CriterionRequirementtypeOfTranslation","Criterionweight","DocumentReference","DocumentReferenceDescription","DocumentReferenceIdentifier","DocumentReferenceType","DocumentReferenceURL","Event","EventDescription","EventIdentifier","EventName","EventrelatedService","EventType","Evidence","EvidencebelongsToAgent","EvidenceDescription","EvidenceEvidenceType","EvidenceIdentifier","EvidenceissuedByOrganisation","EvidenceisSupportedByDocumentReference","EvidenceLanguage","EvidenceName","FormalFramework","FormalFrameworkDescription","FormalFrameworkIdentifier","FormalFrameworkLanguage","FormalFrameworkName","FormalFrameworkrelated","FormalFrameworkStatus","FormalFrameworksubject","FormalFrameworkterritorialApplication","FormalFrameworkType","FoundationEvent","Geometry","GeometryCoordinates","GeometryCRS","GeometryType","Jurisdiction","JurisdictionIdentifier","JurisdictionName","LegalEntity","LegalEntityAddress","LegalEntityAlternativeName","LegalEntityCompanyActivity","LegalEntityCompanyStatus","LegalEntityCompanyType","LegalEntityIdentifier","LegalEntityLegalIdentifier","LegalEntityLegalName","LegalEntityLocation","LegalEntityRegisteredAddress","LifeEvent","Location","LocationAddress","LocationGeographicIdentifier","LocationGeographicName","LocationGeometry","Output","OutputDescription","OutputIdentifier","OutputisDefinedBy","OutputName","OutputType","Participation","Participationdescription","ParticipationIdentifier","Participationrole","Participationtemporal","PeriodOfTime","PeriodOfTimeendDateTime","PeriodOfTimeIdentifier","PeriodOfTimeopeningHours","PeriodOfTimestartDateTime","Person","PersonAddress","PersonAlternativeName","PersonBirthName","PersonCitizenship","PersonCountryOfBirth","PersonCountryOfDeath","PersonDateOfBirth","PersonDateOfDeath","PersonFamilyName","PersonFullName","PersonGender","PersonGivenName","PersonIdentifier","PersonPatronymicName","PersonPlaceOfBirth","PersonPlaceOfDeath","PersonResidency","ProcessingTime","ProcessingTimeIdentifier","ProcessingTimeMeasurementUnit","ProcessingTimeOpeningHours","ProcessingTimeQuantitativeValue","PublicOrganisaitonChangedBy","PublicOrganisationResultedFrom","PublicOrganization","PublicOrganizationAddress","PublicOrganizationAlternativeLabel","PublicOrganizationClassification","PublicOrganizationContactPoint","PublicOrganizationDescription","PublicOrganizationHasMember","PublicOrganizationhasSubOrganisation","PublicOrganizationHasUnit","PublicOrganizationHomepage","PublicOrganizationIdentifier","PublicOrganizationLogo","PublicOrganizationMemberOf","PublicOrganizationNext","PublicOrganizationPreferredLabel","PublicOrganizationPrev","PublicOrganizationPurpose","PublicOrganizationSpatial","PublicOrganizationsubOrganisationOf","PublicOrganizationUnitOf","PublicService","PublicServiceDescription","PublicServiceFollows","PublicServicehasChannel","PublicServicehasCompetentAuthority","PublicServicehasContactPoint","PublicServicehasCost","PublicServicehasCriterion","PublicServicehasFormalFramework","PublicServiceHasInput","PublicServicehasParticipation","PublicServiceHasRole","PublicServiceIdentifier","PublicServiceImplements","PublicServiceisGroupedBy","PublicServiceKeyword","PublicServiceLanguage","PublicServiceName","PublicServicePhysicallyAvailableAt","PublicServiceprocessingTime","PublicServiceProduces","PublicServiceProvides","PublicServiceRelated","PublicServiceRequires","PublicServicesector","PublicServiceserviceProvider","PublicServiceserviceUser","PublicServiceSpatial","PublicServiceStatus","PublicServiceTemporal","PublicServiceType","PublicServiceUses","RequirementGroup","RequirementGroupDescription","RequirementGrouphasCriterionRequirement","RequirementGroupIdentifier","RequirementResponse","RequirementResponseappliesToPeriodOfTime","RequirementResponseDescription","RequirementResponseIdentifier","RequirementResponseName","RequirementResponseprovenByEvidence","RequirementResponsevalidatesCriterionRequirement","RequirementResponsevalue","Rule","RuleDescription","RuleIdentifier","Ruleimplements","RuleLanguage","RuleName");
 	$datamodellabelArrayLower = array_map('strtolower',$datamodellabelArray);
-	$uriArray =	array("http://www.w3.org/ns/locn#Address","http://www.w3.org/ns/locn#addressArea","http://www.w3.org/ns/locn#addressId","http://www.w3.org/ns/locn#adminUnitL1","http://www.w3.org/ns/locn#adminUnitL2","http://www.w3.org/ns/locn#fullAddress","http://www.w3.org/ns/locn#locatorDesignator","http://www.w3.org/ns/locn#locatorName","http://www.w3.org/ns/locn#poBox","http://www.w3.org/ns/locn#postCode","http://www.w3.org/ns/locn#postName","http://www.w3.org/ns/locn#thoroughfare","http://purl.org/dc/terms/Agent","http://data.europa.eu/m8g/hasAddress","http://purl.org/dc/terms/identifier","http://purl.org/dc/terms/title","http://data.europa.eu/m8g/playsRole","http://data.europa.eu/m8g/Provides Requirement Response","http://data.europa.eu/m8g/Satisfies Criterion","http://purl.org/dc/terms/type","http://data.europa.eu/m8g/uses","http://data.europa.eu/m8g/BusinessEvent","https://www.w3.org/ns/org#ChangeEvent","http://data.europa.eu/m8g/hasFormalFramework","https://www.w3.org/ns/org#originalOrganization","https://www.w3.org/ns/org#resultingOrganization","http://data.europa.eu/m8g/Channel","http://data.europa.eu/m8g/availability","http://data.europa.eu/m8g/hasContactPoint","http://data.europa.eu/m8g/hasCost","http://data.europa.eu/m8g/hasInput","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/isOwnedBy","http://data.europa.eu/m8g/processingTime","http://purl.org/dc/terms/type","http://www.w3.org/2006/vcard/ns#Contact","http://www.w3.org/2006/vcard/ns#hasAddress","http://www.w3.org/2006/vcard/ns#hasEmail","http://www.w3.org/2006/vcard/ns#hasTelephone","http://www.w3.org/2006/vcard/ns#hasURL","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/Cost","http://data.europa.eu/m8g/currency","http://purl.org/dc/terms/description","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/value","http://data.europa.eu/m8g/Criteron","http://data.europa.eu/m8g/criterionType","http://purl.org/dc/terms/description","http://data.europa.eu/m8g/fulfilledByRequirementGroup","http://data.europa.eu/m8g/fulfilledIndicator","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/isDefinedInFormalFramework","http://purl.org/dc/terms/title","http://data.europa.eu/m8g/CriterionRequirement","http://data.europa.eu/m8g/applicableinPeriodOfTime","http://purl.org/dc/terms/description","http://data.europa.eu/m8g/expectedDataType","http://data.europa.eu/m8g/expectedValue","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/levelOfCertification","http://data.europa.eu/m8g/maximumValue","http://data.europa.eu/m8g/metByEvidence","http://data.europa.eu/m8g/minimumValue","http://purl.org/dc/terms/title","http://data.europa.eu/m8g/typeOfCopyQuality","http://data.europa.eu/m8g/typeOfTranslation","http://data.europa.eu/m8g/weight","http://data.europa.eu/m8g/DocumentReference","http://purl.org/dc/terms/description","http://purl.org/dc/terms/identifier","http://purl.org/dc/terms/type","","http://data.europa.eu/m8g/Event","http://purl.org/dc/terms/description","http://purl.org/dc/terms/identifier","http://purl.org/dc/terms/title","http://purl.org/dc/terms/relation","http://purl.org/dc/terms/type","http://data.europa.eu/m8g/Evidence","http://data.europa.eu/m8g/belongsToAgent","http://purl.org/dc/terms/description","http://purl.org/dc/terms/type","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/issuedByOrganisation","http://data.europa.eu/m8g/isSupportedByDocumentReference","http://purl.org/dc/terms/language","http://purl.org/dc/terms/title","http://purl.org/vocab/cpsv#FormalFramework","http://purl.org/dc/terms/description","http://purl.org/dc/terms/identifier","http://data.europa.eu/eli/ontology#language","http://purl.org/dc/terms/title","http://purl.org/dc/terms/relation","http://www.w3.org/ns/adms#status","http://data.europa.eu/m8g/subject","http://data.europa.eu/m8g/territorialApplication","http://purl.org/dc/terms/type","http://data.europa.eu/m8g/FoundationEvent","http://www.w3.org/ns/locn#Geometry","","","","","","","http://www.w3.org/ns/legal#LegalEntity","http://www.w3.org/ns/locn#address","http://purl.org/dc/terms/alternative","http://www.w3.org/ns/legal#companyActivity","http://www.w3.org/ns/legal#companyStatus","http://www.w3.org/ns/legal#companyType","http://purl.org/dc/terms/identifier","http://www.w3.org/ns/legal#legalIdentifier","http://www.w3.org/ns/legal#legalName","http://www.w3.org/ns/locn#location","http://www.w3.org/ns/legal#registeredAddress","http://data.europa.eu/m8g/LifeEvent","http://data.europa.eu/m8g/Location","http://data.europa.eu/m8g/Address","http://data.europa.eu/m8g/Geographic Identifier","http://data.europa.eu/m8g/Geographic Name","http://data.europa.eu/m8g/Geometry","http://data.europa.eu/m8g/Output","http://purl.org/dc/terms/description","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/isDefinedBy","http://purl.org/dc/terms/title","http://purl.org/dc/terms/type","http://data.europa.eu/m8g/Participation","http://purl.org/dc/terms/description","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/role","http://data.europa.eu/m8g/temporal","http://data.europa.eu/m8g/PeriodOfTime","http://data.europa.eu/m8g/endDateTime","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/openingHours","http://data.europa.eu/m8g/startDateTime","http://www.w3.org/ns/person#Person","http://www.w3.org/ns/locn#address","http://purl.org/dc/terms/alternative","http://www.w3.org/ns/person#birthName","http://www.w3.org/ns/person#citizenship","http://www.w3.org/ns/person#countryOfBirth","http://www.w3.org/ns/person#countryOfDeath","http://schema.org/birthDate","http://schema.org/deathDate","http://xmlns.com/foaf/0.1/familyName","","http://schema.org/gender","http://xmlns.com/foaf/0.1/givenName","http://purl.org/dc/terms/identifier","http://www.w3.org/ns/person#patronymicName","http://www.w3.org/ns/person#placeOfBirth","http://www.w3.org/ns/person#placeOfDeath","http://www.w3.org/ns/person#residency","","","","","","https://www.w3.org/ns/org#changedBy","https://www.w3.org/ns/org#resultedFrom","http://data.europa.eu/m8g/PublicOrganization","http://www.w3.org/ns/locn#Address","http://www.w3.org/2004/02/skos/core#altLabel","https://www.w3.org/ns/org#classification","https://schema.org/ContactPoint","http://purl.org/dc/terms/description","https://www.w3.org/ns/org#hasMember","https://www.w3.org/ns/org#hasSubOrganization","https://www.w3.org/ns/org#hasUnit","http://xmlns.com/foaf/spec/#term_homepage","https://www.w3.org/ns/org#identifier","https://schema.org/logo","https://www.w3.org/ns/org#memberOf","https://www.w3.org/1999/xhtml/vocab#next","http://www.w3.org/2004/02/skos/core#prefLabel","https://www.w3.org/1999/xhtml/vocab#prev","https://www.w3.org/ns/org#purpose","http://purl.org/dc/terms/spatial","https://www.w3.org/ns/org#subOrganizationOf","https://www.w3.org/ns/org#unitOf","http://purl.org/vocab/cpsv#PublicService","http://purl.org/dc/terms/description","http://purl.org/vocab/cpsv#follows","http://data.europa.eu/m8g/hasChannel","http://data.europa.eu/m8g/hasCompetentAuthority ","http://data.europa.eu/m8g/hasContactPoint","http://data.europa.eu/m8g/hasCost","http://data.europa.eu/m8g/hasCriterion","http://data.europa.eu/m8g/hasFormalFramework ","http://purl.org/vocab/cpsv#hasInput","http://data.europa.eu/m8g/hasParticipation ","http://purl.org/vocab/cpsv#hasRole","http://purl.org/dc/terms/identifier","http://purl.org/vocab/cpsv#implements","http://data.europa.eu/m8g/isGroupedBy","http://www.w3.org/ns/dcat#keyword","http://purl.org/dc/terms/language","http://purl.org/dc/terms/title","http://purl.org/vocab/cpsv#physicallyAvailableAt","http://data.europa.eu/m8g/processingTime","http://purl.org/vocab/cpsv#produces","http://purl.org/vocab/cpsv#provides","http://purl.org/dc/terms/relation","http://purl.org/dc/terms/requires","http://data.europa.eu/m8g/sector","http://data.europa.eu/m8g/serviceProvider","http://data.europa.eu/m8g/serviceUser","http://purl.org/dc/terms/spatial","http://www.w3.org/ns/adms#status","http://purl.org/dc/terms/temporal","http://purl.org/dc/terms/type","http://purl.org/vocab/cpsv#uses","http://data.europa.eu/m8g/RequirementGroup","http://purl.org/dc/terms/description","http://data.europa.eu/m8g/hasCriterionRequirement","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/RequirementResponse","http://data.europa.eu/m8g/appliesToPeriodOfTime","http://purl.org/dc/terms/description","http://purl.org/dc/terms/identifier","http://purl.org/dc/terms/title","http://data.europa.eu/m8g/provenByEvidence","http://data.europa.eu/m8g/validatesCriterionRequirement","http://data.europa.eu/m8g/value","http://purl.org/vocab/cpsv#Rule","http://purl.org/dc/terms/description","http://purl.org/dc/terms/identifier","http://purl.org/vocab/cpsv#implements","http://purl.org/dc/terms/language","http://purl.org/dc/terms/title");
+	$uriArray=	array("http://www.w3.org/ns/locn#Address","http://www.w3.org/ns/locn#addressArea","http://www.w3.org/ns/locn#addressId","http://www.w3.org/ns/locn#adminUnitL1","http://www.w3.org/ns/locn#adminUnitL2","http://www.w3.org/ns/locn#fullAddress","http://www.w3.org/ns/locn#locatorDesignator","http://www.w3.org/ns/locn#locatorName","http://www.w3.org/ns/locn#poBox","http://www.w3.org/ns/locn#postCode","http://www.w3.org/ns/locn#postName","http://www.w3.org/ns/locn#thoroughfare","http://purl.org/dc/terms/Agent","http://data.europa.eu/m8g/hasAddress","http://purl.org/dc/terms/identifier","http://purl.org/dc/terms/title","http://data.europa.eu/m8g/playsRole","http://data.europa.eu/m8g/ProvidesRequirementResponse","http://data.europa.eu/m8g/SatisfiesCriterion","http://purl.org/dc/terms/type","http://data.europa.eu/m8g/uses","http://data.europa.eu/m8g/BusinessEvent","https://www.w3.org/ns/org#ChangeEvent","http://data.europa.eu/m8g/hasFormalFramework","https://www.w3.org/ns/org#originalOrganization","https://www.w3.org/ns/org#resultingOrganization","http://data.europa.eu/m8g/Channel","http://data.europa.eu/m8g/availability","http://data.europa.eu/m8g/hasContactPoint","http://data.europa.eu/m8g/hasCost","http://data.europa.eu/m8g/hasInput","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/isOwnedBy","http://data.europa.eu/m8g/processingTime","http://purl.org/dc/terms/type","http://www.w3.org/2006/vcard/ns#Contact","http://www.w3.org/2006/vcard/ns#hasAddress","http://www.w3.org/2006/vcard/ns#hasEmail","http://www.w3.org/2006/vcard/ns#hasTelephone","http://www.w3.org/2006/vcard/ns#hasURL","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/Cost","http://data.europa.eu/m8g/currency","http://purl.org/dc/terms/description","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/value","http://data.europa.eu/m8g/Criteron","http://data.europa.eu/m8g/criterionType","http://purl.org/dc/terms/description","http://data.europa.eu/m8g/fulfilledByRequirementGroup","http://data.europa.eu/m8g/fulfilledIndicator","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/isDefinedInFormalFramework","http://purl.org/dc/terms/title","http://data.europa.eu/m8g/CriterionRequirement","http://data.europa.eu/m8g/applicableinPeriodOfTime","http://purl.org/dc/terms/description","http://data.europa.eu/m8g/expectedDataType","http://data.europa.eu/m8g/expectedValue","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/levelOfCertification","http://data.europa.eu/m8g/maximumValue","http://data.europa.eu/m8g/metByEvidence","http://data.europa.eu/m8g/minimumValue","http://purl.org/dc/terms/title","http://data.europa.eu/m8g/typeOfCopyQuality","http://data.europa.eu/m8g/typeOfTranslation","http://data.europa.eu/m8g/weight","http://data.europa.eu/m8g/DocumentReference","http://purl.org/dc/terms/description","http://purl.org/dc/terms/identifier","http://purl.org/dc/terms/type","","http://data.europa.eu/m8g/Event","http://purl.org/dc/terms/description","http://purl.org/dc/terms/identifier","http://purl.org/dc/terms/title","http://purl.org/dc/terms/relation","http://purl.org/dc/terms/type","http://data.europa.eu/m8g/Evidence","http://data.europa.eu/m8g/belongsToAgent","http://purl.org/dc/terms/description","http://purl.org/dc/terms/type","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/issuedByOrganisation","http://data.europa.eu/m8g/isSupportedByDocumentReference","http://purl.org/dc/terms/language","http://purl.org/dc/terms/title","http://purl.org/vocab/cpsv#FormalFramework","http://purl.org/dc/terms/description","http://purl.org/dc/terms/identifier","http://data.europa.eu/eli/ontology#language","http://purl.org/dc/terms/title","http://purl.org/dc/terms/relation","http://www.w3.org/ns/adms#status","http://data.europa.eu/m8g/subject","http://data.europa.eu/m8g/territorialApplication","http://purl.org/dc/terms/type","http://data.europa.eu/m8g/FoundationEvent","http://www.w3.org/ns/locn#Geometry","","","","","","","http://www.w3.org/ns/legal#LegalEntity","http://www.w3.org/ns/locn#address","http://purl.org/dc/terms/alternative","http://www.w3.org/ns/legal#companyActivity","http://www.w3.org/ns/legal#companyStatus","http://www.w3.org/ns/legal#companyType","http://purl.org/dc/terms/identifier","http://www.w3.org/ns/legal#legalIdentifier","http://www.w3.org/ns/legal#legalName","http://www.w3.org/ns/locn#location","http://www.w3.org/ns/legal#registeredAddress","http://data.europa.eu/m8g/LifeEvent","http://data.europa.eu/m8g/Location","http://data.europa.eu/m8g/Address","http://data.europa.eu/m8g/GeographicIdentifier","http://data.europa.eu/m8g/GeographicName","http://data.europa.eu/m8g/Geometry","http://data.europa.eu/m8g/Output","http://purl.org/dc/terms/description","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/isDefinedBy","http://purl.org/dc/terms/title","http://purl.org/dc/terms/type","http://data.europa.eu/m8g/Participation","http://purl.org/dc/terms/description","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/role","http://data.europa.eu/m8g/temporal","http://data.europa.eu/m8g/PeriodOfTime","http://data.europa.eu/m8g/endDateTime","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/openingHours","http://data.europa.eu/m8g/startDateTime","http://www.w3.org/ns/person#Person","http://www.w3.org/ns/locn#address","http://purl.org/dc/terms/alternative","http://www.w3.org/ns/person#birthName","http://www.w3.org/ns/person#citizenship","http://www.w3.org/ns/person#countryOfBirth","http://www.w3.org/ns/person#countryOfDeath","http://schema.org/birthDate","http://schema.org/deathDate","http://xmlns.com/foaf/0.1/familyName","","http://schema.org/gender","http://xmlns.com/foaf/0.1/givenName","http://purl.org/dc/terms/identifier","http://www.w3.org/ns/person#patronymicName","http://www.w3.org/ns/person#placeOfBirth","http://www.w3.org/ns/person#placeOfDeath","http://www.w3.org/ns/person#residency","","","","","","https://www.w3.org/ns/org#changedBy","https://www.w3.org/ns/org#resultedFrom","http://data.europa.eu/m8g/PublicOrganization","http://www.w3.org/ns/locn#Address","http://www.w3.org/2004/02/skos/core#altLabel","https://www.w3.org/ns/org#classification","https://schema.org/ContactPoint","http://purl.org/dc/terms/description","https://www.w3.org/ns/org#hasMember","https://www.w3.org/ns/org#hasSubOrganization","https://www.w3.org/ns/org#hasUnit","http://xmlns.com/foaf/spec/#term_homepage","https://www.w3.org/ns/org#identifier","https://schema.org/logo","https://www.w3.org/ns/org#memberOf","https://www.w3.org/1999/xhtml/vocab#next","http://www.w3.org/2004/02/skos/core#prefLabel","https://www.w3.org/1999/xhtml/vocab#prev","https://www.w3.org/ns/org#purpose","http://purl.org/dc/terms/spatial","https://www.w3.org/ns/org#subOrganizationOf","https://www.w3.org/ns/org#unitOf","http://purl.org/vocab/cpsv#PublicService","http://purl.org/dc/terms/description","http://purl.org/vocab/cpsv#follows","http://data.europa.eu/m8g/hasChannel","http://data.europa.eu/m8g/hasCompetentAuthority","http://data.europa.eu/m8g/hasContactPoint","http://data.europa.eu/m8g/hasCost","http://data.europa.eu/m8g/hasCriterion","http://data.europa.eu/m8g/hasFormalFramework","http://purl.org/vocab/cpsv#hasInput","http://data.europa.eu/m8g/hasParticipation","http://purl.org/vocab/cpsv#hasRole","http://purl.org/dc/terms/identifier","http://purl.org/vocab/cpsv#implements","http://data.europa.eu/m8g/isGroupedBy","http://www.w3.org/ns/dcat#keyword","http://purl.org/dc/terms/language","http://purl.org/dc/terms/title","http://purl.org/vocab/cpsv#physicallyAvailableAt","http://data.europa.eu/m8g/processingTime","http://purl.org/vocab/cpsv#produces","http://purl.org/vocab/cpsv#provides","http://purl.org/dc/terms/relation","http://purl.org/dc/terms/requires","http://data.europa.eu/m8g/sector","http://data.europa.eu/m8g/serviceProvider","http://data.europa.eu/m8g/serviceUser","http://purl.org/dc/terms/spatial","http://www.w3.org/ns/adms#status","http://purl.org/dc/terms/temporal","http://purl.org/dc/terms/type","http://purl.org/vocab/cpsv#uses","http://data.europa.eu/m8g/RequirementGroup","http://purl.org/dc/terms/description","http://data.europa.eu/m8g/hasCriterionRequirement","http://purl.org/dc/terms/identifier","http://data.europa.eu/m8g/RequirementResponse","http://data.europa.eu/m8g/appliesToPeriodOfTime","http://purl.org/dc/terms/description","http://purl.org/dc/terms/identifier","http://purl.org/dc/terms/title","http://data.europa.eu/m8g/provenByEvidence","http://data.europa.eu/m8g/validatesCriterionRequirement","http://data.europa.eu/m8g/value","http://purl.org/vocab/cpsv#Rule","http://purl.org/dc/terms/description","http://purl.org/dc/terms/identifier","http://purl.org/vocab/cpsv#implements","http://purl.org/dc/terms/language","http://purl.org/dc/terms/title");
 	$uriArrayLower = array_map('strtolower',$uriArray);
 	
 	$label = trim($class).trim($property);
 	$label = preg_replace('/\s+/', '',$label);
 	$label = strtolower($label);
-	drupal_set_message("label is ".$label);
 	
 	if(!array_search($label,$datamodellabelArrayLower))
 		$uri = ""; 
 	else
 		$uri = $uriArrayLower[array_search($label,$datamodellabelArrayLower)];
 	
-		drupal_set_message("url of ".$class." and ".$property." is ".$uri);
-	return $uri;
+		$urinowhitespace = preg_replace('/\s+/', '', $uri);
+		
+	return $urinowhitespace;
 	
 }
 
