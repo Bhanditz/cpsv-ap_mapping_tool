@@ -2,16 +2,20 @@
 
 .form-item.form-type-select.form-item-datamodellist1 {
 	float: left;
-	width:440px;
+	width:49%;
 	text-align: left;
 	
 }
 
 .form-item.form-type-select.form-item-datamodellist2 {
 	float: right;
-	width:440px;
+	width:49%;
 	text-align: left;
 	
+}
+
+.form-item.form-type-checkbox.form-item-wrapper-datamodels-deletedatamodel {
+	background: white;
 }
 
 #wrapper-datamodels {
@@ -20,13 +24,13 @@
 }
 
 #datamodel-fieldset1 .form-wrapper{
-	width:420px;
+	width: 45%;
 	float:left;
 }
 
 
 #datamodel-fieldset2 .form-wrapper{
-	width: 420px;
+	width: 45%;
 	float:right;
 }
 

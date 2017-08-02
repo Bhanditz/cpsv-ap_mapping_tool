@@ -45,7 +45,7 @@
 #relations-fieldset-wrapper .form-wrapper h2{
 	display:left;
 	width: 110px;
-	padding: 20px 10px 0px 10px;
+	padding: 10px 10px 0px 10px;
 	font-size: 12px;
 	font-weight: bold;
 	text-align: left;
@@ -68,29 +68,31 @@
 	border-top: 1px solid #8c8b8b;
 }
 
+.form-item.form-type-select.editselect{
+	background-color: blue;
+}
 #relations-fieldset-wrapper .form-wrapper .form-item.form-type-textfield{ 
 	float:left;
 	width : 110px;
     text-align: center;
 	padding: 10px 10px 10px 10px;
-	margin: 10px 10px 0px 10px; 
+	margin: 5px 2px 0px 2px; 
 }
 
 #relations-fieldset-wrapper .form-wrapper .form-item.form-type-select{ 
 	float:left;
 	width : 110px;
     text-align: center;
-	padding: 10px 10px 10px 10px;
-	margin: 10px 10px 0px 10px; 
+	margin: 5px 2px 0px 2px; 
 }
 
 #relations-fieldset-wrapper .form-wrapper .form-item.form-type-checkbox{ 
 	float:left;
 	width : 110px;
     text-align: center;
-	padding: 10px 10px 25px 10px;
+	padding: 5px 10px 25px 10px;
 	margin: 10px 10px 0px 10px; 
-	background-color: blue;
+	font-size:10px;
 }
 
 #relations-fieldset-wrapper {

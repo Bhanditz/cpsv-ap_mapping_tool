@@ -476,14 +476,28 @@ function editmapping_basic_submit($form, &$form_state) {
 	if($deletedatamodel == TRUE){
 		if($datamodel1empty->rowCount() == 0  ){
 			drupal_set_message( $datamodel1.' was deleted'); 
-		}else{
-			drupal_set_message( $datamodel1.' was not deleted as it is still used in other mappings'); 
+			
+		}else{ 	
+			
+		db_insert('datamodels')
+			->fields(array(
+				'name' => $datamodel1,
+				'uri' => $datamodel1uri,
+				))->execute();
+      drupal_set_message( $datamodel1.' was not deleted as it is still used in other mappings');
+			
 		}
 	
 		if($datamodel2empty->rowCount() == 0 ){
 			drupal_set_message( $datamodel2.' was deleted'); 
 		}else{
-			drupal_set_message( $datamodel2.' was not deleted as it is still used in other mappings');
+			
+			db_insert('datamodels')
+			->fields(array(
+			  'name' => $datamodel2,
+			  'uri' => $datamodel2uri,
+			  ))->execute();
+      drupal_set_message( $datamodel2.' was not deleted as it is still used in other mappings');
 		}
 	}
  	

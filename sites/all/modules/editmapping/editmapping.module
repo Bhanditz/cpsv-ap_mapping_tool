@@ -2,6 +2,7 @@
 
 require 'vendor/autoload.php';
 
+//define menu
 function editmapping_menu() {
 
 	$items['editmappings'] = array(
@@ -11,53 +12,47 @@ function editmapping_menu() {
 		'access callback' => TRUE,
 	);
 	
-	return $items;
-	
-	
+	return $items;	
 }
 
-
+//main function
 function editmapping_basic($form, &$form_state) {
 		  
-	
+//populate lists
 	$datamodel_list = editmapping_basic_populate_list();
 	$dropdown_array = editmapping_basic_relations_list();
 	
-	
-	
+	//define the fields to pick the two datamodels
 	$form['datamodellist1'] = array (
 					'#title' => t('Choose a source datamodel to change the mappings'),
 					'#type' => 'select',
 					'#options' => $datamodel_list,
-					'#default_value' => 'default',
-					
+					'#default_value' => 'default',	
 				);
-	
-	
 	
 	$form['datamodellist2'] = array (
 					'#title' => t('Choose a target datamodel to change the relations'),
 					'#type' => 'select',
 					'#options' => $datamodel_list,
 					'#default_value' => 'default',
-				
 				);
 	
-	
+	//wrapper
 	$form['wrapper_datamodels']['datamodel_fieldset1'] = array(
 		 '#type' => 'fieldset',
 	 	 '#title' => t('datamodel 1'),
 	 	 '#prefix' => '<div id="datamodel-fieldset1">',
 	 	 '#suffix' => '</div>',
 	 	 		);	
-	
+	//wrapper
 	$form['wrapper_datamodels']['datamodel_fieldset2'] = array(
 		 '#type' => 'fieldset',
 	 	 '#title' => t('datamodel 2'),
 	 	 '#prefix' => '<div id="datamodel-fieldset2">',
 	 	 '#suffix' => '</div>',
 	 	 		);	  	 	 
-		 
+		 	
+	//fields of the datamodels, name & uri's
 			$form['wrapper_datamodels']['datamodel_fieldset1']['datamodel1'] = array (
 		  	  		'#title' => t('Name of the source datamodel'),
 					'#type' => 'textfield',
@@ -84,19 +79,21 @@ function editmapping_basic($form, &$form_state) {
 							'#size' => '50',
 							
 							);
+	//checkbox to delete the selected datamodels & mappings
 	
 			    $form['wrapper_datamodels']['deletedatamodel'] = array (
 		  	  		'#type' => 'checkbox',
 		  	  		'#title' => t('delete datamodel and ALL relations'),
 		  	  		'#title_display' => 'before'
 				);		   
-			   
+	
+				//
 	$form['relations_fieldset'][$i]['labels']['deletemapping'] = array (
 		  	  		'#type' => 'checkbox',
 		  	  		'#title' => t('delete relation'),
 		  	  		'#title_display' => 'before'
 				);
-	
+	//buttons to get the relations, 
 	$form['get_relations'] = array(
 				'#type' => 'submit',
 				'#submit' => array('editmapping_fillfields'),
@@ -119,12 +116,11 @@ function editmapping_basic($form, &$form_state) {
 					),
 				);
 	
-	
-	
 	   $form['#attached']['css'] = array(
 		  	  drupal_get_path('module', 'editmapping') . '/editmapping.css',
 		);
 	   
+	   //defining the headers for the other fields
 	   $form['#tree'] = TRUE;
 	   $form['relations_fieldset'] = array(
 	 	 '#type' => 'fieldset',
@@ -132,8 +128,6 @@ function editmapping_basic($form, &$form_state) {
 	 	 '#prefix' => '<div id="relations-fieldset-wrapper">',
 	 	 '#suffix' => '</div>',
 	 	 );	
-	   
-	   
 	   
 	   	$form['relations_fieldset']['labels']['dummylabelprobnotgoodpractice'] = array (
 		  	  		'#markup' => '<h1> </h1>',
@@ -171,6 +165,7 @@ function editmapping_basic($form, &$form_state) {
 		  	  $form_state['num_relations'] =0;
 		  }
 		  
+		  //defining the other fields
 		  for ($i = 0; $i < $form_state['num_relations']; $i++) {
 		  	  
 		  	  $form['relations_fieldset'][$i]['relationship_label'] = array (
@@ -239,7 +234,6 @@ function editmapping_basic($form, &$form_state) {
 					'#type' => 'checkbox',				
 					);		
 				
-				//URI's if needed 
 				
 				$form['relations_fieldset'][$i]['uri_label'] = array (
 		  	  		'#markup' => '<h2>URIs: </h2>',
@@ -314,7 +308,7 @@ function editmapping_basic($form, &$form_state) {
 	
 }
 
-
+//populate the datamodel list
 function editmapping_basic_populate_list(){
 	
 	$databaselist= db_query('SELECT mid,name FROM datamodels') ;
@@ -329,10 +323,12 @@ function editmapping_basic_populate_list(){
     return $options;
 }
 
+//force update
 function editmapping_add_more_callback($form, &$form_state) {
 	return $form['relations_fieldset'];
 }
 
+//populate the mapping list
 function editmapping_basic_relations_list() {
 	$voc_name = 'Skos_mappingRelation';
 	$myvoc = taxonomy_vocabulary_machine_name_load($voc_name);
@@ -351,14 +347,15 @@ function editmapping_basic_relations_list() {
 }
 
 
-	
-
+//retrieve relations from the database and display them
 function editmapping_fillfields($form, &$form_state){
 	
+	//get the selected datamodels
 	$datamodel1 =$form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
 	$datamodel2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
-	$allrelations = array();
 	
+	//array to put the relations
+	$allrelations = array();
 
 	$relations = db_query('SELECT * FROM relations WHERE did1= :datamodel1 AND did2= :datamodel2', array(':datamodel1' => $datamodel1, ':datamodel2' => $datamodel2));
 	$datamodel1 = db_query('SELECT * FROM datamodels WHERE name= :datamodel1',array(':datamodel1' => $datamodel1));
@@ -366,6 +363,7 @@ function editmapping_fillfields($form, &$form_state){
 	$count= $relations->rowCount();
 	$form_state['num_relations']= $count;
 	
+	//fill fields datamodels
 	$row = $datamodel1-> fetchObject();
 	$form_state['input']['wrapper_datamodels']['datamodel_fieldset1']['datamodel1'] =$row-> name;
 	$form_state['input']['wrapper_datamodels']['datamodel_fieldset1']['URI1'] =$row-> uri;
@@ -373,7 +371,8 @@ function editmapping_fillfields($form, &$form_state){
 	$row = $datamodel2-> fetchObject();
  	$form_state['input']['wrapper_datamodels']['datamodel_fieldset2']['datamodel2'] =$row-> name;
  	$form_state['input']['wrapper_datamodels']['datamodel_fieldset2']['URI2']=$row-> uri;
- 		
+ 	
+ 	//fill all relation fields
 	for($i=0; $i < $count ; $i++) {
 					
 		$row = $relations->fetchObject();
@@ -424,16 +423,20 @@ function editmapping_fillfields($form, &$form_state){
 	
 	
 	$_SESSION['allrelations'] = $allrelations;
-		
+	
+	//rebuild
 	$form_state['rebuild']= TRUE;
 		return form_builder('form-wrapper', $form['relations_fieldset'], $form_state);
 	
 }
 
+//export relations
+
 function editmapping_exportfields($form, &$form_state) {
 	$datamodel1 =$form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
 	$datamodel2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
-		
+	
+	//construct from triple store
 	$query = "CONSTRUCT {?s ?p ?o}
 	WHERE { GRAPH <http://cpsv-ap_mapping.eu> {?s ?p ?o}}";
 	
@@ -452,6 +455,7 @@ function editmapping_exportfields($form, &$form_state) {
 	exit;
 }
 	
+//resubmit the mapping that changed
 function editmapping_basic_submit($form, &$form_state) {
 	
 
@@ -464,7 +468,8 @@ function editmapping_basic_submit($form, &$form_state) {
 	$deletedatamodel = $form_state['values']['wrapper_datamodels']['deletedatamodel'];
 	
  	$data =$_SESSION['allrelations'];
- 	 	
+ 	
+ 	//delete old relations & datamodels
 	db_query('DELETE FROM relations WHERE did1= :datamodel1 AND did2= :datamodel2', array(':datamodel1' => $datamodel1, ':datamodel2' => $datamodel2));
 	
 	$datamodel1empty = db_query('SELECT * FROM relations WHERE did1= :datamodel1 OR did2= :datamodel1', array(':datamodel1' => $datamodel1));
@@ -473,6 +478,7 @@ function editmapping_basic_submit($form, &$form_state) {
 	db_query('DELETE FROM datamodels WHERE name= :datamodel1',array(':datamodel1' => $datamodel1));
 	db_query('DELETE FROM datamodels WHERE name= :datamodel2',array(':datamodel2' => $datamodel2));
 	
+	//insert changes to datamodels
 	if($deletedatamodel == TRUE){
 		if($datamodel1empty->rowCount() == 0  ){
 			drupal_set_message( $datamodel1.' was deleted'); 
@@ -518,6 +524,7 @@ function editmapping_basic_submit($form, &$form_state) {
       ))->execute();
     }
     
+    	//insert changes to relations
 	for($i = 0; $i < $form_state['num_relations']; $i++){
  		
 	$sourceclass= $form_state['values']['relations_fieldset'][$i]['source_class'];
@@ -565,7 +572,7 @@ function editmapping_basic_submit($form, &$form_state) {
     }
     
 	
-
+//update triplestore by replacing the old triples with the changed triples
     if(easyrdf()){  
   	//the $endpoint should point to the correct address
 		$endpoint= 'http://52.50.205.146/sparql';
@@ -573,7 +580,7 @@ function editmapping_basic_submit($form, &$form_state) {
 		
 		$oldvalue = $data[$i]['sourceclassuri'];
  	if($data[$i]['sourceclassuri'] != $sourceclassuri){
- 		
+ 		//update source class
  	$query = 'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {<'.$oldvalue.'> ?p ?o}
 				INSERT {<'.$sourceclassuri.'> ?p ?o}
@@ -601,7 +608,7 @@ function editmapping_basic_submit($form, &$form_state) {
  	
 	
  	if($data[$i]['sourcepropertyuri'] != $sourcepropertyuri){
- 		
+ 		//update source property
  		$oldvalue = $data[$i]['sourcepropertyuri'];
  		
  		$query=	'MODIFY GRAPH <http://cpsv-ap_mapping.eu>
@@ -628,6 +635,7 @@ function editmapping_basic_submit($form, &$form_state) {
 		$response=curl_exec($ch);
 		curl_close($ch);
  	}
+ 	//update relations
  	
  	if($data[$i]['relationuri'] != $relationuri){
  		$oldvalue = $data[$i]['relationuri'];
@@ -658,7 +666,7 @@ function editmapping_basic_submit($form, &$form_state) {
  	
  	if($data[$i]['targetclassuri'] != $targetclassuri){
  		$oldvalue = $data[$i]['targetclassuri'];
- 		
+ 			//update target class
  		$query ='MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {<'.$oldvalue.'> ?p ?o}
 				INSERT {<'.$targetclassuri.'> ?p ?o}
@@ -685,7 +693,7 @@ function editmapping_basic_submit($form, &$form_state) {
  	
  	if($data[$i]['targetpropertyuri'] != $targetpropertyuri){
  		$oldvalue = $data[$i]['targetpropertyuri'];
- 		
+ 			//update target property
  		$query ='MODIFY GRAPH <http://cpsv-ap_mapping.eu>
 				DELETE {<'.$oldvalue.'> ?p ?o}
 				INSERT {<'.$targetpropertyuri.'> ?p ?o}
@@ -711,7 +719,7 @@ function editmapping_basic_submit($form, &$form_state) {
 			
  	}
  
- 	//DELETE MAPPING IN TRIPLE STORE
+ 	//DELETE MAPPING IN TRIPLE STORE 
 
  	if($deletemapping == TRUE){
  		//delete targetproperty
