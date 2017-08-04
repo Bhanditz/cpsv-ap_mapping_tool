@@ -9,16 +9,25 @@ function CPSVAPmapping_menu() {
 	);
 	return $items;
 }
+
+
 //define main function
 function CPSVAPmapping_basic($form, &$form_state) {
 
-	$datamodel_list= CPSVAPmapping_basic_populate_list();
-	$dropdown_array= CPSVAPmapping_basic_relations_list();
-//specifying form and all it's fields
+	// arrays with values for datamodel2, source class and relation dropdown.
+	// source property array is defined in loop below per relation, depending on the selected source class. 
+	$datamodel2_dropdown_array= CPSVAPmapping_basic_populate_datamodel2_array();
+	$relation_dropdown_array= CPSVAPmapping_basic_populate_relations_array();
+	$source_class_dropdown_array = CPSVAPmapping_get_source_class_dropdown_array();
 
+	// set num_relations to 1
+  	if (empty($form_state['num_relations'])) {
+		  $form_state['num_relations'] =1;
+	}
+
+	//specifying form, form css and all it's fields
 	$form = array();
 
-	
 	$form['#attached']['css'] = array(
 		  	  drupal_get_path('module', 'CPSVAPmapping') . '/CPSVAPmapping.css',
 	);
@@ -27,10 +36,11 @@ function CPSVAPmapping_basic($form, &$form_state) {
 	$form['datamodellist2'] = array (
 					'#title' => t('Choose a target datamodel or insert a new one'),
 					'#type' => 'select',
-					'#options' => $datamodel_list,
+					'#options' => $datamodel2_dropdown_array,
 					'#default_value' => 'default',		
 				);
-	//wrapper
+
+	//wrapper datamodel 2
 	$form['datamodel_fieldset2'] = array(
 		 '#type' => 'fieldset',
 	 	 '#title' => t('datamodel 2'),
@@ -38,9 +48,20 @@ function CPSVAPmapping_basic($form, &$form_state) {
 	 	 '#suffix' => '</div>',
 	 	 );	  	 	 
 
-	//fields to add new datamodel
-			 $form['datamodel_fieldset2']['datamodel2'] = array (
-		  	  		'#title' => t('Name of the second datamodel'),                                     
+		//fields to add new datamodel
+		 $form['datamodel_fieldset2']['datamodel2'] = array (
+	  	  		'#title' => t('Name of the second datamodel'),                                     
+				'#type' => 'textfield',
+				'#size' => '50',
+				'#states' => array(
+					'visible' => array(
+					':input[name="datamodellist2"]' => array('value' => '0'),
+						),
+					),
+				);
+			 
+	   $form['datamodel_fieldset2']['URI2'] = array (
+					'#title' => t('URI'),
 					'#type' => 'textfield',
 					'#size' => '50',
 					'#states' => array(
@@ -49,17 +70,6 @@ function CPSVAPmapping_basic($form, &$form_state) {
 							),
 						),
 					);
-			 
-			   $form['datamodel_fieldset2']['URI2'] = array (
-							'#title' => t('URI'),
-							'#type' => 'textfield',
-							'#size' => '50',
-							'#states' => array(
-								'visible' => array(
-								':input[name="datamodellist2"]' => array('value' => '0'),
-									),
-								),
-							);
 	   
 	   //defining all the other fields
 	   $form['#tree'] = TRUE;
@@ -70,124 +80,112 @@ function CPSVAPmapping_basic($form, &$form_state) {
 	 	 '#suffix' => '</div>',
 	 	 );	
 	 	
-	   //dummmy invisible field for css purposes due to time/budget constraints (I know this is bad practice please don't judge me)
-	   	$form['relations_fieldset']['labels']['dummylabelprobnotgoodpractice'] = array (
-		  	  		'#markup' => '<h1> </h1>',
-					);
+		   	//dummmy invisible field for css purposes
+		   	$form['relations_fieldset']['labels']['dummylabel'] = array (
+			  	  		'#markup' => '<h1> </h1>',
+						);
 		
-		  $form['relations_fieldset']['labels']['source_class_label'] = array (
-		  	  		'#markup' => '<h1>Source Class</h1>',
-					);
-		  
-		  $form['relations_fieldset']['labels']['source_property_label'] = array (
+			//source class label
+			$form['relations_fieldset']['labels']['source_class_label'] = array (
+			  	  		'#markup' => '<h1>Source Class</h1>',
+						);
+		  	//source property label
+		 	$form['relations_fieldset']['labels']['source_property_label'] = array (
 					'#markup' => '<h1>Source Property</h1>',
 					);
-		  
-		  $form['relations_fieldset']['labels']['relation_label'] = array (
+		  	//relation label
+		  	$form['relations_fieldset']['labels']['relation_label'] = array (
 					'#markup' => '<h1>Relation</h1>',
 					);
-		  
-		  $form['relations_fieldset']['labels']['target_property_label'] = array (
+		  	//target property label
+		  	$form['relations_fieldset']['labels']['target_property_label'] = array (
 					'#markup' => '<h1>Target Property</h1>',
 					);
-			
-		  $form['relations_fieldset']['labels']['target_class_label'] = array (
+			//target class label
+		  	$form['relations_fieldset']['labels']['target_class_label'] = array (
 					'#markup' => '<h1>Target Class</h1>',
 					);
-		  
-		
-		  
-		  $form['relations_fieldset']['labels']['target_property_label'] = array (
-					'#markup' => '<h1>Target Property</h1>',
-					);
-		  
-		  $form['relations_fieldset']['labels']['syntax_CPSVAPmapping_label'] = array (
+		  	//syntax mapping label
+		  	$form['relations_fieldset']['labels']['syntax_mapping_label'] = array (
 					'#markup' => '<h1>Syntax Mapping</h1>',
 					);
 	
-		  if (empty($form_state['num_relations'])) {
-		  	  $form_state['num_relations'] =1;
-		  }
-		 
-		  //loop to define the dynamic number of relations- as more can be added on the fly
-		  for ($i = 0; $i < $form_state['num_relations']; $i++) {
-
-		  	  $chosen_class = CPSVAPmapping_get_class_chosen();
+		  	//relations
+		  	//loop to define the dynamic number of relations - as more can be added on the fly
+		  	for ($i = 0; $i < $form_state['num_relations']; $i++) {
 		  	  
-		  	  $selected = isset($form_state['values']['relations_fieldset'][$i]['source_class']) ? $form_state['values']['relations_fieldset'][$i]['source_class'] : key($chosen_class);
-		  	  $properties = CPSVAPmapping_get_properties_dropdown_options($selected);
+		  	  	// array with values for source properties dropdown, depending on selected source class.
+		  	  	$selected_source_class = isset($form_state['values']['relations_fieldset'][$i]['source_class']) ? $form_state['values']['relations_fieldset'][$i]['source_class'] : key($source_class_dropdown_array);
+		  	  	$source_properties_dropdown_array = CPSVAPmapping_get_source_properties_dropdown_array($selected_source_class);
 		  	  
-		  	   $form['relations_fieldset'][$i]['relationship_label'] = array (
+		  	  	//relationships label
+		  	   	$form['relations_fieldset'][$i]['relationship_label'] = array (
 		  	  		'#markup' => '<h2>Relationships:</h2>',
 					);
 			   
-			   //field is dropdown populate from a list
+			   	//source class dropdown, populate from array
 				$form['relations_fieldset'][$i]['source_class'] = array (
 					'#type' => 'select',
-					'#options' => $chosen_class,
-					'#default_value' => $selected,
+					'#options' => $source_class_dropdown_array,
+					'#default_value' => $selected_source_class,
 					'#ajax' => array(
 						'callback' => 'CPSVAPmapping_dependent_dropdown_callback',
 						'wrapper' => 'relations-fieldset-wrapper',
 						),
 					);
-				
-				//field is dropdown populate from a list
+				//source property dropdown, populate from array
 				$form['relations_fieldset'][$i]['source_property'] = array (
 					'#type' => 'select',
 					'#prefix' => '<div id="dropdown-properties-replace">',
 					'#suffix' => '</div>',
-					'#options' => $properties,
+					'#options' => $source_properties_dropdown_array,
 					'#default_value' => isset($form_state['values']['relations_fieldset'][$i]['source_property']) ? $form_state['values']['relations_fieldset'][$i]['source_property'] : '',
 					);
-	
-  
+				//relation dropdown, populate from array 
 				$form['relations_fieldset'][$i]['relation'] = array (
 					'#type' => 'select',
-					'#options' => $dropdown_array,
-					
+					'#options' => $relation_dropdown_array,
 					);
-				
-					$form['relations_fieldset'][$i]['target_property'] = array (
-					'#type' => 'textfield',
-					'#size' => '10',
-					);
-					
+				//target property text field
+				$form['relations_fieldset'][$i]['target_property'] = array (
+				'#type' => 'textfield',
+				'#size' => '10',
+				);
+				//target class text field	
 				$form['relations_fieldset'][$i]['target_class'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
-					
 					);	
-				
+				//syntax mapping checkbox
 				$form['relations_fieldset'][$i]['syntax_mapping'] = array (
 					'#type' => 'checkbox',				
 					);	
 				
+				//URI label
 				$form['relations_fieldset'][$i]['uri_label'] = array (
 		  	  		'#markup' => '<h2>URIs: </h2>',
 					);
-								
-					$form['relations_fieldset'][$i]['source_class_URI'] = array (
-					'#title_display'=> 'before',
-					'#type' => 'textfield',
-					'#size' => '10',
-					'#attributes' => array('hidden' => 'hidden'),
-				     
-					);
-				
+							
+				//hidden, source class URI				
+				$form['relations_fieldset'][$i]['source_class_URI'] = array (
+				'#title_display'=> 'before',
+				'#type' => 'textfield',
+				'#size' => '10',
+				'#attributes' => array('hidden' => 'hidden'),
+				);
+				//hidden, source property URI
 				$form['relations_fieldset'][$i]['source_property_URI'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 					'#attributes' => array('hidden' => 'hidden'),
-					
 					);
-								
+				//hidden, relation URI	
 				$form['relations_fieldset'][$i]['relation_URI'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
 					 '#attributes' => array('hidden' => 'hidden'),
 					);
-				
+				//target property URI text field
 				$form['relations_fieldset'][$i]['target_property_URI'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
@@ -197,6 +195,7 @@ function CPSVAPmapping_basic($form, &$form_state) {
 									),
 								),
 					);
+				//target class URI text field
 				$form['relations_fieldset'][$i]['target_class_URI'] = array (
 					'#type' => 'textfield',
 					'#size' => '10',
@@ -205,20 +204,21 @@ function CPSVAPmapping_basic($form, &$form_state) {
 								':input[name="relations_fieldset['.$i.'][known_URI]"]' => array('checked' => FALSE),
 									),
 								),
-					);
+					);				
 				
-				
-				
-					
+				//known URI label
 				$form['relations_fieldset'][$i]['labels']['known_uri'] = array (
 		  	  		'#markup' => '<h3> only fill in the URIs if they are known </h3>',
 				);
-				
-					$form['relations_fieldset'][$i]['line'] = array (
+				//line between relations
+				$form['relations_fieldset'][$i]['line'] = array (
 		  	  		'#markup' => '<div class="style1"></div>',
 				);
 			}
+
+
 			//buttons to generate URI, add relations, remove relations and submit form
+			//generate URI button
 			$form['generate_uri'] = array(
 				'#type' => 'submit',
 				'#submit' => array('CPSVAPmapping_generate_uri'),
@@ -230,7 +230,7 @@ function CPSVAPmapping_basic($form, &$form_state) {
 					'wrapper' => 'relations-fieldset-wrapper',
 					),
 				);
-			
+			//add 1 relation button
 			$form['add_relation'] = array(
 				'#type' => 'submit',
 				'#value' => t('add relation'),
@@ -241,7 +241,7 @@ function CPSVAPmapping_basic($form, &$form_state) {
 					'wrapper' => 'relations-fieldset-wrapper',
 					),
 				);
-				  	  	
+			//add 5 relations button	  	  	
   	  	  	$form['add_5_relations'] = array(
   	  	  		'#type' => 'submit',
   	  	  		'#value' => ('+5 relations'),
@@ -252,7 +252,7 @@ function CPSVAPmapping_basic($form, &$form_state) {
 					'wrapper' => 'relations-fieldset-wrapper',
 					),
 				);
-			
+			//remove 1 relation button
 			$form['remove_relation'] = array(
 				'#type' => 'submit',
 				'#value' => ('remove relation'),
@@ -263,7 +263,7 @@ function CPSVAPmapping_basic($form, &$form_state) {
 					'wrapper' => 'relations-fieldset-wrapper',
 					),
 				);
-			
+			//remove 5 relations button
 			$form['remove_five_relations'] = array(
 				'#type' => 'submit',
 				'#value' => ('-5 relations'),
@@ -274,24 +274,35 @@ function CPSVAPmapping_basic($form, &$form_state) {
 					'wrapper' => 'relations-fieldset-wrapper',
 					),
 				);
-  	  	  	
+  	  	  	//submit button
 		   $form['submit'] = array(
 			 '#type' => 'submit',
 			 '#value' => t('Submit'),		
-			 '#attributes' => array('onclick' => 'if(!confirm("are you sure you want to submit the mapping?")){return false;}')
-			
-			
+			 '#attributes' => array('onclick' => 'if(!confirm("Are you sure you want to submit the mapping?")){return false;}')
 			 );
 		   
 	return $form;
-	
 }
 
-//add relations
+
+
+//force update
+function CPSVAPmapping_add_more_callback($form, $form_state) {
+
+  return $form['relations_fieldset'];
+}	
+//force update	
+function CPSVAPmapping_dependent_dropdown_callback($form, $form_state) {
+  
+  return $form['relations_fieldset'] ;
+}
+
+
+
+//add 1 relation
 function CPSVAPmapping_add_one($form, &$form_state) {
 	$form_state['num_relations']++;
 	$form_state['rebuild'] = TRUE;
-	
 }
 //add 5 relations
 function CPSVAPmapping_add_five($form,&$form_state) {
@@ -299,14 +310,14 @@ function CPSVAPmapping_add_five($form,&$form_state) {
 	$form_state['rebuild'] = TRUE;
 }
 
-	//remove relations
+//remove 1 relation
 function CPSVAPmapping_remove_one($form, &$form_state) {
 	if($form_state['num_relations'] > 1){
 		$form_state['num_relations']--;
 		$form_state['rebuild'] = TRUE;
 	}
 }
-	//remove 5 relations
+//remove 5 relations
 function CPSVAPmapping_remove_five($form, &$form_state) {
 	if($form_state['num_relations'] > 5){
 		$form_state['num_relations']-=5;
@@ -314,12 +325,15 @@ function CPSVAPmapping_remove_five($form, &$form_state) {
 	}
 }
 
-//fucntion to generate uri's when the field is empty
+
+
+//function to generate uri's for target property & class when the field is empty
+// URI's are generated by using the URI of the data model + the label of the class (& property)
 function CPSVAPmapping_generate_uri($form, &$form_state ){
 
 	$select2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
 	
-		//if it's a new data model get the URI otherwise if it exists get it from that database via db_query.
+	//if it's a new data model get the URI otherwise if it exists get it from that database via db_query.
 	if($select2== "add new") {
 		$datamodel2=$form_state['values']['wrapper_datamodels']['datamodel_fieldset2']['datamodel2'];
 		$datamodelURI2= $form_state['values']['wrapper_datamodels']['datamodel_fieldset2']['URI2'];
@@ -327,16 +341,15 @@ function CPSVAPmapping_generate_uri($form, &$form_state ){
 	else {
 		$datamodel2=$select2;
 		$result2 = db_query('SELECT uri FROM datamodels WHERE name= :datamodel2', array(':datamodel2' => $datamodel2));
-		$datamodelURI2= $result2->fetchField(0);
-		
+		$datamodelURI2= $result2->fetchField(0);	
 	}
 	$root = (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/';
 
-//generate URI for each field if it's empty. URI's are generated by using the URI of the data model + the label of the class & property
+	//generate URI for each field if it's empty. 
 	for($i = 0; $i < $form_state['num_relations']; $i++){
-				
-		$relation_choice= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']];
 		
+		// define relation URI (skos)
+		$relation_choice= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']];
 		if($relation_choice=='Exact match')
 			$form_state['input']['relations_fieldset'][$i]['relation_URI']='skos:exactMatch';
 		if($relation_choice=='Close match')
@@ -348,20 +361,21 @@ function CPSVAPmapping_generate_uri($form, &$form_state ){
 		if($relation_choice=='Related match')
 			$form_state['input']['relations_fieldset'][$i]['relation_URI']='skos:relatedMatch';
 		
-		$testempty1 = trim($form_state['values']['relations_fieldset'][$i]['target_class']);
-		$testempty2 = trim($form_state['values']['relations_fieldset'][$i]['target_class_URI']);
-	
-		if(!empty($testempty1)&& empty($testempty2)){
+
+		$test_empty_target_class = trim($form_state['values']['relations_fieldset'][$i]['target_class']);
+		$test_empty_target_class_URI = trim($form_state['values']['relations_fieldset'][$i]['target_class_URI']);
+		// Check if target class is not empty, and target class URI is empty. If so, fill.
+		if(!empty($test_empty_target_class)&& empty($test_empty_target_class_URI)){
 		$targetclassUri = $datamodelURI2.'/class/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['target_class']);
 		unset($form_state['input']['relations_fieldset'][$i]['target_class_URI']);
 	
 		$form_state['input']['relations_fieldset'][$i]['target_class_URI'] = $targetclassUri;	
 		}
 		
-		$testempty1 = trim($form_state['values']['relations_fieldset'][$i]['target_property']);
-		$testempty2 = trim($form_state['values']['relations_fieldset'][$i]['target_property_URI']);
-		
-		if(!empty($testempty1)&& empty($testempty2)) {
+		$test_empty_target_property = trim($form_state['values']['relations_fieldset'][$i]['target_property']);
+		$test_empty_target_property_URI = trim($form_state['values']['relations_fieldset'][$i]['target_property_URI']);
+		// Check if target property is not empty, and target property URI is empty. If so, fill.
+		if(!empty($test_empty_target_property)&& empty($test_empty_target_property_URI)) {
 		$targetpropertyUri = $datamodelURI2.'/class/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['target_class']).'/property/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['target_property']);
 		unset($form_state['input']['relations_fieldset'][$i]['target_property_URI']);
 
@@ -369,242 +383,253 @@ function CPSVAPmapping_generate_uri($form, &$form_state ){
 		}			
 	
 	}
-		//update the form
+	//update the form
 	$form_state['rebuild']= TRUE;
 
 	return form_builder('form-wrapper', $form['relations_fieldset'], $form_state);
 }
 
-//force update
-function CPSVAPmapping_add_more_callback($form, $form_state) {
 
-  return $form['relations_fieldset'];
-}	
 
 //validate input, check if everything is filled
 function CPSVAPmapping_basic_validate($form, &$form_state){
+
 	$foo = FALSE;
  
+ 	// Check if datamodel 2 is selected or filled in
 	$select2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
-     
-	$testempty1 = trim($form_state['values']['datamodel_fieldset2']['datamodel2']);
-	$testempty2 = trim($form_state['values']['datamodel_fieldset2']['URI2']);
+
+	$test_empty_datamodel2 = trim($form_state['values']['datamodel_fieldset2']['datamodel2']);
+	$test_empty_datamodel2_URI = trim($form_state['values']['datamodel_fieldset2']['URI2']);
  		
-	if($select2== "add new"){
-		if(empty($testempty1)){
+	if($select2 == "add new"){
+		if(empty($test_empty_datamodel2)){
 			form_set_error('postal', t('target datamodel name is required.'));
 			$foo= TRUE;
 		 }
 		  
-		if(empty($testempty2)){
+		if(empty($test_empty_datamodel2_URI)){
 			form_set_error('postal', t('target datamodel uri is required.'));
 			$foo= TRUE;
 		  }
 	}
 
+	// Check for each relation
 	for($i = 0; $i < $form_state['num_relations']; $i++){
 		
-		  $testempty4=  trim($form_state['values']['relations_fieldset'][$i]['relation']);
-		  $testempty5 = trim($form_state['values']['relations_fieldset'][$i]['target_class']);
-		  $testempty6 = $form_state['complete form']['relations_fieldset'][$i]['source_property']['#options'][$form_state['values']['relations_fieldset'][$i]['source_property']];	
-		  $testempty7 = trim($form_state['values']['relations_fieldset'][$i]['target_property']);
-  		
-		if(empty($testempty4)) {
+		$test_empty_relation=  trim($form_state['values']['relations_fieldset'][$i]['relation']);
+		$test_empty_target_class = trim($form_state['values']['relations_fieldset'][$i]['target_class']);
+		$test_empty_source_property = $form_state['complete form']['relations_fieldset'][$i]['source_property']['#options'][$form_state['values']['relations_fieldset'][$i]['source_property']];	
+		$test_empty_target_property = trim($form_state['values']['relations_fieldset'][$i]['target_property']);
+  		// Check if relation is empty
+		if(empty($test_empty_relation)) {
 			 form_set_error('postal', t('The relation is required.'));
 			 $foo= TRUE;
 		}
-	 
-		if(empty($testempty5)) {
+	 	// Check if target class is empty
+		if(empty($test_empty_target_class)) {
 			 form_set_error('postal', t('The target class is required.'));
 			 $foo= TRUE;
 		}
-		
-		if($testempty6 != "" && empty($testempty7)){
+		// If both source_property & target_property empty, do not throw error (=> mapping of classes)
+		//Check if target property is empty (and source_property is filled in)
+		if($test_empty_source_property != "" && empty($test_empty_target_property)){
 			 form_set_error('postal', t('The target property is required.'));
 			 $foo= TRUE;
 		}
-		
-		if($testempty6 == "" && !empty($testempty7)){
+		//Check if source property is empty (and target property is filled in)
+		if($test_empty_source_property == "" && !empty($test_empty_target_property)){
 			 form_set_error('postal', t('The source property is required.'));
 			 $foo= TRUE;
 		}
-    
   	 }
+
   if($foo==TRUE){
   	 return;
-  }
-  
+  }  
 }
+
+
+
 //submit form 
 function CPSVAPmapping_basic_submit($form, &$form_state) {
-	
-	$root = (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/';
-	//URI and datamodel CPSV-AP
-	$datamodel1='CPSV-AP';
-	$datamodelURI1= 'https://joinup.ec.europa.eu/asset/cpsv-ap/description';
-		
-	$select2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
-	//if new data model, save it in database
-	if($select2== "add new") {
-		$datamodel2=$form_state['values']['datamodel_fieldset2']['datamodel2'];
-		$datamodelURI2= $form_state['values']['datamodel_fieldset2']['URI2'];
-	}
-	else {
-		$datamodel2=$select2;
-		$result2 = db_query('SELECT uri FROM datamodels WHERE name= :datamodel2', array(':datamodel2' => $datamodel2));
-		$datamodelURI2= $result2->fetchField(0);
-	}
-	
-    if($select2 =='add new') {
-    	db_insert('datamodels')
-    	->fields(array(
-    		'name' =>$form_state['values']['datamodel_fieldset2']['datamodel2'],
-    		'uri' =>$form_state['values']['datamodel_fieldset2']['URI2'],
-    	))->execute();
-    }
     
+    $root = (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/';
     
-	//get uri's of the classes and properties from file
-	$dir = getcwd ();
-	$datafile = file_get_contents($dir.'/sites/all/modules/CPSVAPmapping/uri.txt');
-	$uriLines = explode (";" , $datafile);
-	  
-   foreach($uriLines as $row) {
-   	   list($k,$v) = explode("|",$row);
-   	   $k = preg_replace('/\s+/', '', trim(strtolower($k)));
-   	   $datamodeluris[$k]= $v;
-	}
-	
-        //loop over all the relations
- for($i = 0; $i < $form_state['num_relations']; $i++){
- 	 
- 
-  if(!empty($form['relations_fieldset'][$i]['source_class'])) {
- 	
-  	$relation_choice= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']]; 	 
-  	$sourceclass= $form_state['complete form']['relations_fieldset'][$i]['source_class']['#options'][$form_state['values']['relations_fieldset'][$i]['source_class']];
-  	$sourceclasslabel = preg_replace('/\s+/', '', trim(strtolower($sourceclass)));
- 	$sourceclassuri = $datamodeluris[$sourceclasslabel];
- 	
- 	if($sourceclassuri =='')
-		$sourceclassuri = $datamodelURI1.'/property/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['source_class']);
-	
-	
-	
- 	$sourceproperty= $form_state['complete form']['relations_fieldset'][$i]['source_property']['#options'][$form_state['values']['relations_fieldset'][$i]['source_property']];	
- 	
- 	if($sourceproperty != '') {
- 		$sourcepropertylabel = preg_replace('/\s+/', '', trim(strtolower($sourceproperty)));
- 		$sourcepropertyuri =$datamodeluris[$sourceclasslabel.$sourcepropertylabel];
- 		
- 		if($sourcepropertyuri ==''){
-			$sourcepropertyuri = $datamodelURI1.'/property/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['source_property']);
-		}
- 	}
- 	
-	
-	
-	$relation= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']];
-	if($relation_choice=='Exact match')
-		$relationuri='skos:exactMatch';
-	if($relation_choice=='Close match')
-		$relationuri='skos:closeMatch';
-	if($relation_choice=='Narrow match')
-		$relationuri='skos:narrowMatch';
-	if($relation_choice=='Broad match')
-		$relationuri='skos:broadMatch';
-	if($relation_choice=='Related match')
-		$relationuri='skos:relatedMatch';
-	
-	$targetclass= $form_state['values']['relations_fieldset'][$i]['target_class'];
-	$targetclassuri= $form_state['values']['relations_fieldset'][$i]['target_class_URI'];
-	$targetproperty= $form_state['values']['relations_fieldset'][$i]['target_property'];
-	
-	if($targetproperty !='') {
-		$targetpropertyuri= $form_state['values']['relations_fieldset'][$i]['target_property_URI'];
-	}
-	
-	$synmap= $form_state['values']['relations_fieldset'][$i]['syntax_mapping'];
-	//store them in database
-	db_insert('relations')
-    ->fields(array(
-      'did1' => $datamodel1,
-      'did2' => $datamodel2,
-      'coreclass' =>$sourceclass, 
-      'coreclassuri' => $sourceclassuri,
-      'coreproperty' =>$sourceproperty,
-      'corepropertyuri' =>$sourcepropertyuri,
-      'relation' =>$relation,
-      'relationuri' =>$relationuri,
-      'mappedclass' =>$targetclass,
-      'mappedclassuri' =>$targetclassuri,
-      'mappedproperty' =>  $targetproperty,
-      'mappedpropertyuri' =>  $targetpropertyuri,
-      'synmap' =>$synmap,
-      ))->execute();
+    //URI and datamodel CPSV-AP
+    $datamodel1='CPSV-AP';
+    $datamodelURI1= 'https://joinup.ec.europa.eu/asset/cpsv-ap/description';
+        
+    $select2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
+    //if new data model, load values from text fields. Otherwise, if it exists, get it from that database via db_query.
+    if($select2== "add new") {
+        $datamodel2=$form_state['values']['datamodel_fieldset2']['datamodel2'];
+        $datamodelURI2= $form_state['values']['datamodel_fieldset2']['URI2'];
     }
     else {
-    	drupal_set_message('CPSVAPmapping relations are not filled in correctly');
+        $datamodel2=$select2;
+        $result2 = db_query('SELECT uri FROM datamodels WHERE name= :datamodel2', array(':datamodel2' => $datamodel2));
+        $datamodelURI2= $result2->fetchField(0);
     }
- 
-  $datamodelURI1	= preg_replace('/\s+/', '', $datamodelURI1);
-  $datamodelURI2	= preg_replace('/\s+/', '', $datamodelURI2);
-  $sourcepropertyuri= preg_replace('/\s+/', '', $sourcepropertyuri);
-  $targetpropertyuri= preg_replace('/\s+/', '', $targetpropertyuri);
-  $sourceclassuri	= preg_replace('/\s+/', '', $sourceclassuri);
-  $targetclassuri	= preg_replace('/\s+/', '', $targetclassuri); 		
+    
+    //if new data model, save it in database.
+    if($select2 =='add new') {
+        db_insert('datamodels')
+        ->fields(array(
+            'name' =>$form_state['values']['datamodel_fieldset2']['datamodel2'],
+            'uri' =>$form_state['values']['datamodel_fieldset2']['URI2'],
+        ))->execute();
+    }
+    
+    
+    //get URI's of the classes and properties from file
+    $dir = getcwd ();
+    $datafile = file_get_contents($dir.'/sites/all/modules/CPSVAPmapping/uri.txt');
+    $uriLines = explode (";" , $datafile);
+
+    foreach($uriLines as $row) {
+        list($k,$v) = explode("|",$row);
+        $k = preg_replace('/\s+/', '', trim(strtolower($k)));
+        $datamodeluris[$k]= $v;
+
+    }
+    
+    //loop over all the relations
+    for($i = 0; $i < $form_state['num_relations']; $i++){
+     
+        // check that source_class is filled in
+        if(!empty($form['relations_fieldset'][$i]['source_class'])) {
+            
+            // Get source class and it's URI
+            $sourceclass= $form_state['complete form']['relations_fieldset'][$i]['source_class']['#options'][$form_state['values']['relations_fieldset'][$i]['source_class']];
+            $sourceclasslabel = preg_replace('/\s+/', '', trim(strtolower($sourceclass)));
+            $sourceclassuri = $datamodeluris[$sourceclasslabel];
+            // If URI not in datamodel specification file, fill in based on label and datamodel URI
+            if($sourceclassuri =='')
+                $sourceclassuri = $datamodelURI1.'/property/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['source_class']);
+            
+            
+            // Get source property and it's URI
+            $sourceproperty= $form_state['complete form']['relations_fieldset'][$i]['source_property']['#options'][$form_state['values']['relations_fieldset'][$i]['source_property']]; 
+            if($sourceproperty != '') {
+                $sourcepropertylabel = preg_replace('/\s+/', '', trim(strtolower($sourceproperty)));
+                $sourcepropertyuri =$datamodeluris[$sourceclasslabel.$sourcepropertylabel];
+                // If URI not in datamodel specification file, fill in based on label and datamodel URI
+                if($sourcepropertyuri ==''){
+                    $sourcepropertyuri = $datamodelURI1.'/property/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['source_property']);
+                }
+            }
+            
+
+            // Get relation and fill it's URI (skos)
+            $relation= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']];
+            if($relation=='Exact match')
+                $relationuri='skos:exactMatch';
+            if($relation=='Close match')
+                $relationuri='skos:closeMatch';
+            if($relation=='Narrow match')
+                $relationuri='skos:narrowMatch';
+            if($relation=='Broad match')
+                $relationuri='skos:broadMatch';
+            if($relation=='Related match')
+                $relationuri='skos:relatedMatch';
+            
+
+            // Get target class and property and it's URI's 
+            $targetclass= $form_state['values']['relations_fieldset'][$i]['target_class'];
+            $targetclassuri= $form_state['values']['relations_fieldset'][$i]['target_class_URI'];
+            $targetproperty= $form_state['values']['relations_fieldset'][$i]['target_property'];
+            if($targetproperty !='')
+                $targetpropertyuri= $form_state['values']['relations_fieldset'][$i]['target_property_URI'];
+            
+
+            // Get state of syntax mapping
+            $synmap= $form_state['values']['relations_fieldset'][$i]['syntax_mapping'];
+
+
+            //store them in database
+            db_insert('relations')
+            ->fields(array(
+              'did1' => $datamodel1,
+              'did2' => $datamodel2,
+              'coreclass' =>$sourceclass, 
+              'coreclassuri' => $sourceclassuri,
+              'coreproperty' =>$sourceproperty,
+              'corepropertyuri' =>$sourcepropertyuri,
+              'relation' =>$relation,
+              'relationuri' =>$relationuri,
+              'mappedclass' =>$targetclass,
+              'mappedclassuri' =>$targetclassuri,
+              'mappedproperty' =>  $targetproperty,
+              'mappedpropertyuri' =>  $targetpropertyuri,
+              'synmap' =>$synmap,
+              ))->execute();
+        }
+        else {
+            drupal_set_message('Mapping relations are not filled in correctly');
+        }
+
+
+        $datamodelURI1  = preg_replace('/\s+/', '', $datamodelURI1);
+        $datamodelURI2  = preg_replace('/\s+/', '', $datamodelURI2);
+        $sourcepropertyuri= preg_replace('/\s+/', '', $sourcepropertyuri);
+        $targetpropertyuri= preg_replace('/\s+/', '', $targetpropertyuri);
+        $sourceclassuri = preg_replace('/\s+/', '', $sourceclassuri);
+        $targetclassuri = preg_replace('/\s+/', '', $targetclassuri);       
       
   
-  //store stuff in triplestore with easyrdf
+        //store in triplestore with easyrdf
+        if(easyrdf()){
+            //the $endpoint should point to the correct address
+            $endpoint= 'http://52.50.205.146/sparql-graph-crud';
+            $gs = new EasyRdf_GraphStore($endpoint);
+            $graph1 = new EasyRdf_Graph();
 
- 	if(easyrdf()){
- 		//the $endpoint should point to the correct address
-		$endpoint= 'http://52.50.205.146/sparql-graph-crud';
- 		$gs = new EasyRdf_GraphStore($endpoint);
- 		$graph1 = new EasyRdf_Graph();
- 		//datamodel definition
- 		$graph1->addResource('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
- 		$graph1->addResource('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2004/02/skos/core#Concept');
- 		$graph1->add('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/2000/01/rdf-schema#label', "Core Data Model");
- 		$graph1->add('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', "reusable data models that are defined, managed, promoted and maintained centrally to facilitate interoperability across different systems, applications and domains");
+            //datamodel definition
+            $graph1->addResource('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
+            $graph1->addResource('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2004/02/skos/core#Concept');
+            $graph1->add('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/2000/01/rdf-schema#label', "Core Data Model");
+            $graph1->add('http://mapping.semic.eu/def#DataModel', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', "reusable data models that are defined, managed, promoted and maintained centrally to facilitate interoperability across different systems, applications and domains");
 
- 		//datamodel, classes & properties
- 		$graph1->addResource($datamodelURI1, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://mapping.semic.eu/def#DataModel');
- 		$graph1->addResource($datamodelURI2, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://mapping.semic.eu/def#DataModel');
- 		if($sourcepropertyuri!=''){
- 			$graph1->addResource($sourcepropertyuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property');
- 		}
- 		if($targetpropertyuri!=''){
- 			$graph1->addResource($targetpropertyuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property');
- 		}
+            //datamodel, classes & properties
+            $graph1->addResource($datamodelURI1, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://mapping.semic.eu/def#DataModel');
+            $graph1->addResource($datamodelURI2, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://mapping.semic.eu/def#DataModel');
+            if($sourcepropertyuri!=''){
+                $graph1->addResource($sourcepropertyuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property');
+            }
+            if($targetpropertyuri!=''){
+                $graph1->addResource($targetpropertyuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property');
+            }
 
- 		$graph1->addResource($sourceclassuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
- 		$graph1->addResource($targetclassuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');	
- 		//ispartof
- 		$graph1->addResource($sourceclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI1);
- 		$graph1->addResource($targetclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI2);
+            $graph1->addResource($sourceclassuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class');
+            $graph1->addResource($targetclassuri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class'); 
+            //ispartof
+            $graph1->addResource($sourceclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI1);
+            $graph1->addResource($targetclassuri, 'http://purl.org/dc/terms/isPartOf', $datamodelURI2);
 
- 		if($sourcepropertyuri =='' && $targetpropertyuri ==''){   
+            if($sourcepropertyuri =='' && $targetpropertyuri ==''){   
 
- 			$graph1->addResource($sourceclassuri,$relationuri, $targetclassuri); 
+                $graph1->addResource($sourceclassuri,$relationuri, $targetclassuri); 
 
- 		}
- 		else{
- 			drupal_set_message($sourcepropertyuri." or ".$targetpropertyuri);
- 			$graph1->addResource($sourcepropertyuri, 'http://purl.org/dc/terms/isPartOf', $sourceclassuri);
- 			$graph1->addResource($targetpropertyuri, 'http://purl.org/dc/terms/isPartOf', $targetclassuri);
- 			$graph1->addResource($sourcepropertyuri,$relationuri, $targetpropertyuri); 
- 		}
+            }
+            else{
+                drupal_set_message($sourcepropertyuri." or ".$targetpropertyuri);
+                $graph1->addResource($sourcepropertyuri, 'http://purl.org/dc/terms/isPartOf', $sourceclassuri);
+                $graph1->addResource($targetpropertyuri, 'http://purl.org/dc/terms/isPartOf', $targetclassuri);
+                $graph1->addResource($sourcepropertyuri,$relationuri, $targetpropertyuri); 
+            }
 
- 		$gs->insert($graph1, 'http://cpsv-ap_mapping.eu');
- 		}
-	}
-	
- 		drupal_set_message("CPSV-AP Mapping has been submitted");
+            $gs->insert($graph1, 'http://cpsv-ap_mapping.eu');
+        }
+    }
+    
+    drupal_set_message("Mapping has been submitted");
 }
-//populate list of datamodels
 
-function CPSVAPmapping_basic_populate_list(){
+
+
+//populate list of datamodels
+function CPSVAPmapping_basic_populate_datamodel2_array(){
 	$databaselist= db_query('SELECT mid,name FROM datamodels') ;
 
 	$options= array('0' => 'add new');
@@ -617,7 +642,7 @@ function CPSVAPmapping_basic_populate_list(){
 }
 
 //populate list of relations		  
-function CPSVAPmapping_basic_relations_list() {
+function CPSVAPmapping_basic_populate_relations_array() {
 	$voc_name = 'Skos_mappingRelation';
 	$myvoc = taxonomy_vocabulary_machine_name_load($voc_name);
 		  
@@ -634,44 +659,10 @@ function CPSVAPmapping_basic_relations_list() {
 	return $dropdown_list;
 }
 
-//populate list of CPSV-AP classes
-function CPSVAPmapping_basic_classes_list(){
-	$classes_name = 'Classes';
-	$myclasses = taxonomy_vocabulary_machine_name_load($classes_name);
-		  
-	$classes_source = taxonomy_get_tree($myclasses->vid);
-	
-	$classes_list = array('0' => '---none---');
-		  
-		  foreach ($classes_source as $item) {
-		  	  $key = $item->tid;
-		  	  $value = $item->name;
-		  	  $classes_list[$key] = $value;
-		  }              
-		  
-	return $classes_list;
-}
-//populate list of CPSV-AP properties
-function CPSVAPmapping_basic_properties_list($vocabulary){
 
-	
-	$classes = taxonomy_get_tree($vocabulary);
-
-  foreach ($classes as $data) {
-    $output[$data->tid] = $data->name;
-  }
-  
-  return $output;
-}
-		
-function CPSVAPmapping_dependent_dropdown_callback($form, $form_state) {
-  
-  return $form['relations_fieldset'] ;
-  
-}
 
 //classes & properties
-function CPSVAPmapping_get_class_chosen() {
+function CPSVAPmapping_get_source_class_dropdown_array() {
   return drupal_map_assoc(
     array(
 		t('Public Service'),
@@ -693,7 +684,7 @@ function CPSVAPmapping_get_class_chosen() {
   );
  }
 
-function CPSVAPmapping_get_properties_dropdown_options($key = '') {
+function CPSVAPmapping_get_source_properties_dropdown_array($key = '') {
   $options = array(
     t('Public Service') => drupal_map_assoc(
       array(
@@ -847,7 +838,6 @@ function CPSVAPmapping_get_properties_dropdown_options($key = '') {
         t('Has Address'),
       )
     ),
-    
     t('Public Organization') => drupal_map_assoc(
       array(
       	t(''),
@@ -863,9 +853,9 @@ function CPSVAPmapping_get_properties_dropdown_options($key = '') {
         t('has telephone'),
         t('opening hours'),
         t('availability restriction'),
-      )
-    ),
-);
+        )
+      ) 
+    );
     
   if (isset($options[$key])) {
     return $options[$key];
@@ -874,5 +864,38 @@ function CPSVAPmapping_get_properties_dropdown_options($key = '') {
     return array();
   }
 }
-
 	
+
+
+/*NOT USED*/
+/*
+//populate list of CPSV-AP classes
+function CPSVAPmapping_basic_classes_list(){
+	$classes_name = 'Classes';
+	$myclasses = taxonomy_vocabulary_machine_name_load($classes_name);
+		  
+	$classes_source = taxonomy_get_tree($myclasses->vid);
+	
+	$classes_list = array('0' => '---none---');
+		  
+		  foreach ($classes_source as $item) {
+		  	  $key = $item->tid;
+		  	  $value = $item->name;
+		  	  $classes_list[$key] = $value;
+		  }              
+		  
+	return $classes_list;
+}*/
+
+/*NOT USED*/
+/*//populate list of CPSV-AP properties
+function CPSVAPmapping_basic_properties_list($vocabulary){
+	
+	$classes = taxonomy_get_tree($vocabulary);
+
+  foreach ($classes as $data) {
+    $output[$data->tid] = $data->name;
+  }
+  
+  return $output;
+}*/
