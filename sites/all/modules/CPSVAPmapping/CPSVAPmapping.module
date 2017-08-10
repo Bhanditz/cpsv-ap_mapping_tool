@@ -1,4 +1,5 @@
 <?php
+
 //define menu
 function CPSVAPmapping_menu() {
 
@@ -13,10 +14,9 @@ function CPSVAPmapping_menu() {
 
 //define main function
 function CPSVAPmapping_basic($form, &$form_state) {
-
     // Get Core datamodel specification and it's classes (array with values for source class dropdown)
     // source property array is defined in loop below per relation, depending on the selected source class. 
-    $datamodel1_specification= read_Datamodel1_specification_file();
+	$datamodel1_specification = read_Datamodel1_specification_file();
     $source_class_dropdown_array = CPSVAPmapping_get_source_class_dropdown_array($datamodel1_specification);
 
 	// arrays with values for datamodel2 and relation dropdown.
@@ -453,16 +453,18 @@ function CPSVAPmapping_basic_validate($form, &$form_state){
 }
 
 
-
 //submit form 
 function CPSVAPmapping_basic_submit($form, &$form_state) {
     
     $root = (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/';
+
+    //get name and base URI datamodel 1
+    $dir = getcwd ();
+    $datamodelfile = file_get_contents($dir.'/sites/all/modules/CPSVAPmapping/datamodel.txt');
+    list($datamodel1,$datamodelURI1) = explode("|",$datamodelfile);
+    $datamodel1 = preg_replace('/\s+/', '', trim(strtolower($datamodel1)));
     
-    //URI and datamodel CPSV-AP
-    $datamodel1='CPSV-AP';
-    $datamodelURI1= 'https://joinup.ec.europa.eu/asset/cpsv-ap/description';
-        
+    // get name and base URI datamodel 2
     $select2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
     //if new data model, load values from text fields. Otherwise, if it exists, get it from that database via db_query.
     if($select2== "add new") {
@@ -484,18 +486,8 @@ function CPSVAPmapping_basic_submit($form, &$form_state) {
         ))->execute();
     }
     
-    
-    //get URI's of the classes and properties from file
-    $dir = getcwd ();
-    $datafile = file_get_contents($dir.'/sites/all/modules/CPSVAPmapping/uri.txt');
-    $uriLines = explode (";" , $datafile);
-
-    foreach($uriLines as $row) {
-        list($k,$v) = explode("|",$row);
-        $k = preg_replace('/\s+/', '', trim(strtolower($k)));
-        $datamodeluris[$k]= $v;
-
-    }
+    // get URI's of classes and properties of datamodel 1
+    $datamodel1_specification = read_Datamodel1_specification_file();
     
     //loop over all the relations
     for($i = 0; $i < $form_state['num_relations']; $i++){
@@ -505,8 +497,8 @@ function CPSVAPmapping_basic_submit($form, &$form_state) {
             
             // Get source class and it's URI
             $sourceclass= $form_state['complete form']['relations_fieldset'][$i]['source_class']['#options'][$form_state['values']['relations_fieldset'][$i]['source_class']];
-            $sourceclasslabel = $sourceclass;
-            $sourceclassuri = $datamodeluris[$sourceclasslabel];
+            //Get URI of specific property of specific class
+    		$sourceclassuri = $datamodel1_specification[$sourceclass][''];
             // If URI not in datamodel specification file, fill in based on label and datamodel URI
             if($sourceclassuri =='')
                 $sourceclassuri = $datamodelURI1.'/property/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['source_class']);
@@ -515,8 +507,7 @@ function CPSVAPmapping_basic_submit($form, &$form_state) {
             // Get source property and it's URI
             $sourceproperty= $form_state['complete form']['relations_fieldset'][$i]['source_property']['#options'][$form_state['values']['relations_fieldset'][$i]['source_property']]; 
             if($sourceproperty != '') {
-                $sourcepropertylabel = $sourceproperty;
-                $sourcepropertyuri =$datamodeluris[$sourceclasslabel.$sourcepropertylabel];
+                $sourcepropertyuri =$datamodel1_specification[$sourceclass][$sourceproperty];
                 // If URI not in datamodel specification file, fill in based on label and datamodel URI
                 if($sourcepropertyuri ==''){
                     $sourcepropertyuri = $datamodelURI1.'/property/'.str_replace(' ','',$form_state['values']['relations_fieldset'][$i]['source_property']);
@@ -672,9 +663,11 @@ function read_Datamodel1_specification_file(){
     $finalArray = array();
 
     foreach($lines as $row) {
-        list($class,$property,$uri) = explode("|",$row);
-        $class = preg_replace('/\s+/', '', $class);
-        $finalArray[$class][$property] = $uri;
+    	if ($row != '') {
+	        list($class,$property,$uri) = explode("|",$row);
+	        $class = preg_replace('/\s+/', '', $class);
+	        $finalArray[$class][$property] = $uri;
+    	}
     }
 
     return $finalArray;
@@ -701,7 +694,7 @@ function read_Datamodel1_specification_file(){
 
 
 
-//classes
+// Get all classes
 function CPSVAPmapping_get_source_class_dropdown_array($datamodelArray = array()) {
     $classes = array();
 
@@ -713,6 +706,7 @@ function CPSVAPmapping_get_source_class_dropdown_array($datamodelArray = array()
     return drupal_map_assoc($classes);
  }
 
+// Get all properties of specific class
 function CPSVAPmapping_get_source_properties_dropdown_array($datamodelArray = array(),$key = '') {
     $properties = array();
 
