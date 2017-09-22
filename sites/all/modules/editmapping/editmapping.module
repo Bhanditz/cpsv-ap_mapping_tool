@@ -433,12 +433,16 @@ function editmapping_fillfields($form, &$form_state){
 //export relations
 
 function editmapping_exportfields($form, &$form_state) {
-	$datamodel1 =$form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
-	$datamodel2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
-	
+	$datamodeluri1 =$form_state['values']['wrapper_datamodels']['datamodel_fieldset1']['URI1'];
+	$datamodeluri2 = $form_state['values']['wrapper_datamodels']['datamodel_fieldset2']['URI2'];
+			
 	//construct from triple store
-	$query = "CONSTRUCT {?s ?p ?o}
-	WHERE { GRAPH <http://cpsv-ap_mapping.eu> {?s ?p ?o}}";
+	//$query = "CONSTRUCT {?s ?p ?o}
+	//WHERE { GRAPH <http://cpsv-ap_mapping.eu> {?s ?p ?o}}";
+	
+	$query = "CONSTRUCT {?s ?p <".$datamodeluri1.">}
+	WHERE { GRAPH <http://cpsv-ap_mapping.eu> {?s ?p <".$datamodeluri1.">}}";
+	 drupal_set_message($query);
 	
 	$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
 	
