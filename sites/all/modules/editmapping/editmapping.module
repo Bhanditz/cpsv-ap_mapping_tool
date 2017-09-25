@@ -240,7 +240,7 @@ function editmapping_basic($form, &$form_state) {
 					);
 				
 				
-					$form['relations_fieldset'][$i]['source_class_URI'] = array (
+				$form['relations_fieldset'][$i]['source_class_URI'] = array (
 					'#title_display'=> 'before',
 					'#type' => 'textfield',
 					'#size' => '10',
@@ -433,25 +433,87 @@ function editmapping_fillfields($form, &$form_state){
 //export relations
 
 function editmapping_exportfields($form, &$form_state) {
-	$datamodeluri1 =$form_state['values']['wrapper_datamodels']['datamodel_fieldset1']['URI1'];
-	$datamodeluri2 = $form_state['values']['wrapper_datamodels']['datamodel_fieldset2']['URI2'];
-			
-	//construct from triple store
-	//$query = "CONSTRUCT {?s ?p ?o}
-	//WHERE { GRAPH <http://cpsv-ap_mapping.eu> {?s ?p ?o}}";
+	// header of output file
+	$response = 
+	'<?xml version="1.0" encoding="UTF-8"?>
+	<rdf:RDF
+		xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+		xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+		xmlns:skos="http://www.w3.org/2004/02/skos/core#">
+	';
+
+	// if number of relations empty, set to 0
+	if (empty($form_state['num_relations'])) {
+		  	  $form_state['num_relations'] =0;
+	}
+
+	// loop over all relations
+	for ($i = 0; $i < $form_state['num_relations']; $i++) {
+
+		//determine the kind of match
+		if($form_state['input']['relations_fieldset'][$i]['relation'] = 1) 
+			$match = "closeMatch";
+		if($form_state['input']['relations_fieldset'][$i]['relation'] = 2) 
+			$match = "exactMatch";
+		if($form_state['input']['relations_fieldset'][$i]['relation'] = 3) 
+			$match = "narrowMatch";
+		if($form_state['input']['relations_fieldset'][$i]['relation'] = 4) 
+			$match = "relatedMatch";
+		if($form_state['input']['relations_fieldset'][$i]['relation'] = 5) 
+			$match = "broadMatch";
+
+		// if relation between classes, write rdf:Description element
+		if(empty($form_state['values']['relations_fieldset'][$i]['source_property_URI'])) {
+			$response .= '
+		<rdf:Description rdf:about="http://cpsv-ap_mapping.eu/';
+			$response .= $i;
+			$response .= '">
+			<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#mappingRelation"/>
+			<rdfs:Class rdf:resource="';
+			$response .= $form_state['values']['relations_fieldset'][$i]['source_class_URI'];
+			$response .= '"/>
+			<skos:';
+			$response .= $match;
+			$response .=  ' rdf:resource="';
+			$response .= $form_state['values']['relations_fieldset'][$i]['target_class_URI'];
+			$response .= '"/>
+			<skos:inScheme rdf:resource="';
+			$response .= $form_state['values']['relations_fieldset'][$i]['target_class_URI'];
+			$response .= '"/>
+		</rdf:Description>
+		';
+		// if relation between properties, write rdf:Description element
+		} else {
+			$response .= '
+		<rdf:Description rdf:about="http://cpsv-ap_mapping.eu/';
+			$response .= $i;
+			$response .= '">
+			<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#mappingRelation"/>
+			<rdf:Property rdf:resource="';
+			$response .= $form_state['values']['relations_fieldset'][$i]['source_property_URI'];
+			$response .= '"/>
+			<rdfs:Class rdf:resource="';
+			$response .= $form_state['values']['relations_fieldset'][$i]['source_class_URI'];
+			$response .= '"/>
+			<skos:';
+			$response .= $match;
+			$response .=  'rdf:resource="';
+			$response .= $form_state['values']['relations_fieldset'][$i]['target_property_URI'];
+			$response .= '"/>
+			<skos:inScheme rdf:resource="';
+			$response .= $form_state['values']['relations_fieldset'][$i]['target_class_URI'];
+			$response .= '"/>
+		</rdf:Description>
+		';
+		} 
+		
+	}
+
+	// end the file
+	$response .= '
+	</rdf:RDF>';
 	
-	$query = "CONSTRUCT {?s ?p <".$datamodeluri1.">}
-	WHERE { GRAPH <http://cpsv-ap_mapping.eu> {?s ?p <".$datamodeluri1.">}}";
-	 drupal_set_message($query);
-	
-	$searchUrl = 'http://52.50.205.146/sparql?'.'query='.urlencode($query).'&format=rdf';
-	
-	$ch = curl_init();
-	curl_setopt($ch,CURLOPT_URL,$searchUrl);
-	curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
-	$response=curl_exec($ch);
-	curl_close($ch);	
-	
+	//output the file
 	header("Content-Disposition: attachment; filename=\"export.rdf\"");
 	header("Content-Type: text/plain");
 	header("Content-Length: ".strlen($response));
