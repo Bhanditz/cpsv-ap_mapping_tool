@@ -3,3 +3,5 @@ description= mapping tool
 core= 7.x
 package= Custom
 stylesheets[all][] = mapping.css
+;scripts
+scripts[] = import.js

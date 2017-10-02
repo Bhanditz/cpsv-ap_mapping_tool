@@ -26,7 +26,57 @@ function mapping_basic($form, &$form_state) {
 		  	  drupal_get_path('module', 'mapping') . '/mapping.css',
 		);
 	   
-	   
+	drupal_add_js(drupal_get_path('module', 'mapping') . '/import.js');
+
+	//wrapper for css purposes
+	$form['wrapper-import'] = array(
+		 '#type' => 'fieldset',
+	 	 '#title' => t('Import an existing mapping between two datamodels'),
+	 	 '#prefix' => '<div id="datamodel-import">',
+	 	 '#suffix' => '</div>',
+	 	 );	
+	$form['wrapper-import']['help-tip'] = array(
+		'#type' => 'item',
+	 	 '#prefix' => '<div id="help-tip"><p>To import, create a .csv file with the following structure: <br>
+		model 1|model 1 URI||||||model 2|model 2 URI|; <br>
+		source class|source class URI|source property|source property URI|relation|target property|target property URI|target class|target class URI|syntax mapping; <br>
+		source class|source class URI|source property|source property URI|relation|target property|target property URI|target class|target class URI|syntax mapping; <br>
+		... <br>
+		<br>
+		Example: <br>
+		model 1|http://model1.org/||||||model 2|http://model2.org/|; <br>
+		class 1|http://model1.org/class/class1||||||class 2|http://model2.org/class/class2|; <br>
+		class 1|http://model1.org/class/class1|property 1|http://model1.org/property/property1|Exact match|property 2|http://model2.org/property/property2|class 2|http://model2.org/class/class2|TRUE; <br>
+		class 3|http://model1.org/class/class3|property 10|http://model1.org/property/property10|Close match|property 6|http://model2.org/property/property6|class 5|http://model2.org/class/class5|FALSE; <br>
+		class 3|http://model1.org/class/class3|property 11|http://model1.org/property/property11|Related match|property 7|http://model2.org/property/property7|class 5|http://model2.org/class/class5|; <br>
+		</p>',
+		'#suffix' => '</div>',
+		);
+	//datamodel 1&2 import
+	$form['wrapper-import']['myfile'] = array (
+					'#type' => 'managed_file',
+					'#upload_validators' => array(
+    					'file_validate_extensions' => array('csv'),
+    					),
+				);
+
+	//button to import the uploaded file, click is triggered automatically. Hide from view
+	$form['wrapper-import']['import-button'] = array(
+		'#type' => 'submit',
+		'#submit' => array('import_existing_mapping'),	
+		'#value' => t('Import'),
+		'#limit_validation_errors' => array(
+			array('wrapper-import', 'myfile'), // Validate $form_state['values']['myfile'].
+         ),
+		'#ajax' => array(
+					'event' => 'change',
+					'callback' => 'mapping_add_more_callback',
+					'wrapper' => 'relations-fieldset-wrapper',
+					),
+		);
+
+			
+
 	//datamodel 1 select list
 	$form['datamodellist1'] = array (
 					'#title' => t('Choose a source datamodel or insert a new one'),
@@ -116,7 +166,7 @@ function mapping_basic($form, &$form_state) {
 	 	 '#suffix' => '</div>',
 	 	 );	
 	   
-	   //dummmy invisible field for css purposes due to time/budget constraints (I know this is bad practice please don't judge me)
+	   //dummmy invisible field for css purposes
 	   	$form['relations_fieldset']['labels']['dummylabelprobnotgoodpractice'] = array (
 		  	  		'#markup' => '<h1> </h1>',
 					);
@@ -256,7 +306,7 @@ function mapping_basic($form, &$form_state) {
 				
 			}
 		
-				//buttons to generate URI, add relations, remove relations and submit form
+			//buttons to generate URI, add relations, remove relations and submit form
 			$form['generate_uri'] = array(
 				'#type' => 'submit',
 				'#submit' => array('mapping_generate_uri'),
@@ -712,7 +762,82 @@ function mapping_basic_relations_list() {
 }
 
 
+//function to generate the uri's if none are specified
+function import_existing_mapping($form, &$form_state ){
+	// load file from field & get content
+	$file = file_load($form_state['values']['wrapper-import']['myfile']);
+	$url = file_create_url($file->uri);
+	$content = file_get_contents($url);
 
+	// split the file at end of line
+	$lines = explode (";" , $content);
 
+	//count the number of lines in the file and set the number of relations to it - 2 (the line containing the model information & end of file)
+	$count= count($lines);
+	$form_state['num_relations']= $count - 2;
 
+	// counter to evaluate which line is being processed
+    $counter = -1;
+    //for every line of the file, do ...
+    foreach($lines as $row) {
+    	if ($row != '') {
+
+    		// get all elements out of the line
+		    list($sourceClass, $sourceClassUri, $sourceProperty, $sourcePropertyUri, 
+	        	$relation, 
+	        	$targetProperty, $targetPropertyUri, $targetClass, $targetClassUri,
+	        	$syntaxMapping) = explode("|",$row);
+
+    		// first row contains the model information, rest of the lines contain the relations information
+    		if ($counter == -1 ) {
+		        // fill in model 1 fields
+    			$form_state['input']['wrapper_datamodels']['datamodel_fieldset1']['datamodel1'] = $sourceClass;
+    			$form_state['input']['wrapper_datamodels']['datamodel_fieldset1']['URI1'] = $sourceClassUri;
+	
+				//fill in model 2 fields
+			 	$form_state['input']['wrapper_datamodels']['datamodel_fieldset2']['datamodel2'] = $targetClass;
+			 	$form_state['input']['wrapper_datamodels']['datamodel_fieldset2']['URI2']=  $targetClassUri;
+			 	
+    		} else {
+    			$form_state['input']['relations_fieldset'][$counter]['source_class'] = $sourceClass;
+				$form_state['input']['relations_fieldset'][$counter]['source_class_URI'] = $sourceClassUri;
+				$form_state['input']['relations_fieldset'][$counter]['source_property'] = $sourceProperty;
+				$form_state['input']['relations_fieldset'][$counter]['source_property_URI'] = $sourcePropertyUri;
+				
+				if($relation == "Close match") 
+					$form_state['input']['relations_fieldset'][$counter]['relation'] = 1;
+				if($relation == "Exact match") 
+					$form_state['input']['relations_fieldset'][$counter]['relation'] = 2;
+				if($relation == "Narrow match") 
+					$form_state['input']['relations_fieldset'][$counter]['relation'] = 3;
+				if($relation == "Related match") 
+					$form_state['input']['relations_fieldset'][$counter]['relation'] = 4;
+				if($relation == "Broad match") 
+					$form_state['input']['relations_fieldset'][$counter]['relation'] = 5;
+				
+				$form_state['input']['relations_fieldset'][$counter]['target_class'] = $targetClass;
+				$form_state['input']['relations_fieldset'][$counter]['target_class_URI'] = $targetClassUri;
+				$form_state['input']['relations_fieldset'][$counter]['target_property'] = $targetProperty;
+				$form_state['input']['relations_fieldset'][$counter]['target_property_URI'] = $targetPropertyUri;
+				
+				
+				unset($form_state['input']['relations_fieldset'][$counter]['syntax_mapping']);
+				if($syntaxMapping == 'TRUE') {
+					
+					$form_state['input']['relations_fieldset'][$counter]['syntax_mapping'] = TRUE;
+				}
+				else{
+					$form_state['input']['relations_fieldset'][$counter]['synmap'] = FALSE;
+				}
+    		}
+
+    		$counter++;
+	        
+    	}
+    }
+
+	//rebuild
+	$form_state['rebuild']= TRUE;
+	return form_builder('form-wrapper', $form['relations_fieldset'], $form_state);
+}
 	
