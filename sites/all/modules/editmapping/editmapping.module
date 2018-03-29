@@ -525,10 +525,12 @@ function editmapping_exportfields($form, &$form_state) {
 function editmapping_basic_submit($form, &$form_state) {
 	
 
-	$datamodel1 =$form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
+	$datamodel1select =$form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
+	$datamodel1box =$form_state['values']['wrapper_datamodels']['datamodel_fieldset1']['datamodel1'];
 	$datamodel1uri = $form_state['values']['wrapper_datamodels']['datamodel_fieldset1']['URI1'];
 	
-	$datamodel2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
+	$datamodel2select = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
+	$datamodel2box = $form_state['values']['wrapper_datamodels']['datamodel_fieldset2']['datamodel2'];
 	$datamodel2uri = $form_state['values']['wrapper_datamodels']['datamodel_fieldset2']['URI2'];
 	
 	$deletedatamodel = $form_state['values']['wrapper_datamodels']['deletedatamodel'];
@@ -536,59 +538,96 @@ function editmapping_basic_submit($form, &$form_state) {
  	$data =$_SESSION['allrelations'];
  	
  	//delete old relations & datamodels
-	db_query('DELETE FROM relations WHERE did1= :datamodel1 AND did2= :datamodel2', array(':datamodel1' => $datamodel1, ':datamodel2' => $datamodel2));
+	db_query('DELETE FROM relations WHERE did1= :datamodel1 AND did2= :datamodel2', array(':datamodel1' => $datamodel1select, ':datamodel2' => $datamodel2select));
 	
-	$datamodel1empty = db_query('SELECT * FROM relations WHERE did1= :datamodel1 OR did2= :datamodel1', array(':datamodel1' => $datamodel1));
-	$datamodel2empty = db_query('SELECT * FROM relations WHERE did1= :datamodel2 OR did2= :datamodel2', array(':datamodel2' => $datamodel2));
+	$datamodel1empty = db_query('SELECT * FROM relations WHERE did1= :datamodel1 OR did2= :datamodel1', array(':datamodel1' => $datamodel1select));
+	$datamodel2empty = db_query('SELECT * FROM relations WHERE did1= :datamodel2 OR did2= :datamodel2', array(':datamodel2' => $datamodel2select));
 	
-	db_query('DELETE FROM datamodels WHERE name= :datamodel1',array(':datamodel1' => $datamodel1));
-	db_query('DELETE FROM datamodels WHERE name= :datamodel2',array(':datamodel2' => $datamodel2));
+	db_query('DELETE FROM datamodels WHERE name= :datamodel1',array(':datamodel1' => $datamodel1select));
+	db_query('DELETE FROM datamodels WHERE name= :datamodel2',array(':datamodel2' => $datamodel2select));
 	
 	//insert changes to datamodels
 	if($deletedatamodel == TRUE){
 		if($datamodel1empty->rowCount() == 0  ){
-			drupal_set_message( $datamodel1.' was deleted'); 
+			drupal_set_message( $datamodel1box.' was deleted'); 
 			
 		}else{ 	
 			
 		db_insert('datamodels')
 			->fields(array(
-				'name' => $datamodel1,
+				'name' => $datamodel1box,
 				'uri' => $datamodel1uri,
 				))->execute();
-      drupal_set_message( $datamodel1.' was not deleted as it is still used in other mappings');
+      drupal_set_message( $datamodel1box.' was not deleted as it is still used in other mappings');
 			
 		}
 	
 		if($datamodel2empty->rowCount() == 0 ){
-			drupal_set_message( $datamodel2.' was deleted'); 
+			drupal_set_message( $datamodel2box.' was deleted'); 
 		}else{
 			
 			db_insert('datamodels')
 			->fields(array(
-			  'name' => $datamodel2,
+			  'name' => $datamodel2box,
 			  'uri' => $datamodel2uri,
 			  ))->execute();
-      drupal_set_message( $datamodel2.' was not deleted as it is still used in other mappings');
+      drupal_set_message( $datamodel2box.' was not deleted as it is still used in other mappings');
 		}
 	}
  	
  	
  	if( $deletedatamodel == FALSE) {
-	db_insert('datamodels')
-    ->fields(array(
-      'name' => $datamodel1,
-      'uri' => $datamodel1uri,
-      ))->execute();
+ 		if ($datamodel1box == $datamodel1select) {
+ 			db_insert('datamodels')
+		    ->fields(array(
+		      'name' => $datamodel1box,
+		      'uri' => $datamodel1uri,
+		      ))->execute();
+		 } else {
+		 	if($datamodel1empty->rowCount() == 0  ){
+				drupal_set_message( $datamodel1select.' was deleted');
+				db_insert('datamodels')
+					->fields(array(
+						'name' => $datamodel1box,
+						'uri' => $datamodel1uri,
+						))->execute(); 
+			}else{ 		
+				db_insert('datamodels')
+					->fields(array(
+						'name' => $datamodel1box,
+						'uri' => $datamodel1uri,
+						))->execute();
+		      	drupal_set_message( $datamodel1select.' was not deleted as it is still used in other mappings');
+		 	}
+		}
     }
     
-    if( $deletedatamodel== FALSE) {
-	db_insert('datamodels')
-    ->fields(array(
-      'name' => $datamodel2,
-      'uri' => $datamodel2uri,
-      ))->execute();
-    }
+ 	if( $deletedatamodel == FALSE) {
+ 		if ($datamodel2box == $datamodel2select) {
+ 			db_insert('datamodels')
+		    ->fields(array(
+		      'name' => $datamodel2box,
+		      'uri' => $datamodel2uri,
+		      ))->execute();
+		 } else {
+		 	if($datamodel2empty->rowCount() == 0  ){
+				drupal_set_message( $datamodel2select.' was deleted'); 
+				db_insert('datamodels')
+					->fields(array(
+						'name' => $datamodel2box,
+						'uri' => $datamodel2uri,
+						))->execute();
+			}else{ 		
+				db_insert('datamodels')
+					->fields(array(
+						'name' => $datamodel2box,
+						'uri' => $datamodel2uri,
+						))->execute();
+		      	drupal_set_message( $datamodel2box.' was not deleted as it is still used in other mappings');
+		 	}
+	
+	    }
+	}
     
     	//insert changes to relations
 	for($i = 0; $i < $form_state['num_relations']; $i++){
@@ -621,8 +660,8 @@ function editmapping_basic_submit($form, &$form_state) {
 	db_insert('relations')
     ->fields(array(
     	
-      'did1' => $datamodel1,
-      'did2' => $datamodel2,
+      'did1' => $datamodel1box,
+      'did2' => $datamodel2box,
       'coreclass' =>$sourceclass, 
       'coreclassuri' => $sourceclassuri,
       'coreproperty' =>$sourceproperty,
