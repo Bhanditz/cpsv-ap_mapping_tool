@@ -522,8 +522,7 @@ function editmapping_exportfields($form, &$form_state) {
 }
 	
 //resubmit the mapping that changed
-function editmapping_basic_submit($form, &$form_state) {
-	
+function editmapping_basic_submit($form, &$form_state) {	
 
 	$datamodel1select =$form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
 	$datamodel1box =$form_state['values']['wrapper_datamodels']['datamodel_fieldset1']['datamodel1'];
@@ -545,11 +544,13 @@ function editmapping_basic_submit($form, &$form_state) {
 	
 	db_query('DELETE FROM datamodels WHERE name= :datamodel1',array(':datamodel1' => $datamodel1select));
 	db_query('DELETE FROM datamodels WHERE name= :datamodel2',array(':datamodel2' => $datamodel2select));
+	db_query('DELETE FROM datamodels WHERE name= :datamodel1',array(':datamodel1' => $datamodel1box));
+	db_query('DELETE FROM datamodels WHERE name= :datamodel2',array(':datamodel2' => $datamodel2box));
 	
 	//insert changes to datamodels
 	if($deletedatamodel == TRUE){
 		if($datamodel1empty->rowCount() == 0  ){
-			drupal_set_message( $datamodel1box.' was deleted'); 
+			drupal_set_message( $datamodel1select.' was deleted'); 
 			
 		}else{ 	
 			
@@ -558,14 +559,14 @@ function editmapping_basic_submit($form, &$form_state) {
 				'name' => $datamodel1box,
 				'uri' => $datamodel1uri,
 				))->execute();
-      drupal_set_message( $datamodel1box.' was not deleted as it is still used in other mappings');
+      	drupal_set_message( $datamodel1box.' was not deleted as it is still used in other mappings');
 			
 		}
 	
 		if($datamodel2empty->rowCount() == 0 ){
-			drupal_set_message( $datamodel2box.' was deleted'); 
+			drupal_set_message( $datamodel2select.' was deleted'); 
 		}else{
-			
+	
 			db_insert('datamodels')
 			->fields(array(
 			  'name' => $datamodel2box,
@@ -577,59 +578,54 @@ function editmapping_basic_submit($form, &$form_state) {
  	
  	
  	if( $deletedatamodel == FALSE) {
- 		if ($datamodel1box == $datamodel1select) {
- 			db_insert('datamodels')
+ 		// insert datamodel 1 into datamodels
+ 		db_insert('datamodels')
 		    ->fields(array(
 		      'name' => $datamodel1box,
 		      'uri' => $datamodel1uri,
 		      ))->execute();
+ 		if ($datamodel1box == $datamodel1select) {
+
 		 } else {
 		 	if($datamodel1empty->rowCount() == 0  ){
 				drupal_set_message( $datamodel1select.' was deleted');
+			}else{ 
 				db_insert('datamodels')
-					->fields(array(
-						'name' => $datamodel1box,
-						'uri' => $datamodel1uri,
-						))->execute(); 
-			}else{ 		
-				db_insert('datamodels')
-					->fields(array(
-						'name' => $datamodel1box,
-						'uri' => $datamodel1uri,
-						))->execute();
+			    ->fields(array(
+			      'name' => $datamodel1select,
+			      'uri' => $datamodel1uri,
+			      ))->execute();		
 		      	drupal_set_message( $datamodel1select.' was not deleted as it is still used in other mappings');
 		 	}
 		}
-    }
-    
- 	if( $deletedatamodel == FALSE) {
- 		if ($datamodel2box == $datamodel2select) {
- 			db_insert('datamodels')
+
+		// insert datamodel 2 into datamodels
+		db_insert('datamodels')
 		    ->fields(array(
 		      'name' => $datamodel2box,
 		      'uri' => $datamodel2uri,
 		      ))->execute();
+
+		if ($datamodel2box == $datamodel2select) {
+
 		 } else {
 		 	if($datamodel2empty->rowCount() == 0  ){
-				drupal_set_message( $datamodel2select.' was deleted'); 
+				drupal_set_message( $datamodel2select.' was deleted');
+			}else{
 				db_insert('datamodels')
-					->fields(array(
-						'name' => $datamodel2box,
-						'uri' => $datamodel2uri,
-						))->execute();
-			}else{ 		
-				db_insert('datamodels')
-					->fields(array(
-						'name' => $datamodel2box,
-						'uri' => $datamodel2uri,
-						))->execute();
-		      	drupal_set_message( $datamodel2box.' was not deleted as it is still used in other mappings');
+				    ->fields(array(
+				      'name' => $datamodel2select,
+				      'uri' => $datamodel2uri,
+				      ))->execute();	 		
+		      	drupal_set_message( $datamodel2select.' was not deleted as it is still used in other mappings');
 		 	}
-	
-	    }
-	}
+		}
+    }
+
+
     
-    	//insert changes to relations
+    
+    //insert changes to relations
 	for($i = 0; $i < $form_state['num_relations']; $i++){
  		
 	$sourceclass= $form_state['values']['relations_fieldset'][$i]['source_class'];
