@@ -1,1 +1,1 @@
-CPSV-AP|https://joinup.ec.europa.eu/asset/cpsv-ap/description
+CPSV-AP 2.1|https://joinup.ec.europa.eu/asset/cpsv-ap/description
