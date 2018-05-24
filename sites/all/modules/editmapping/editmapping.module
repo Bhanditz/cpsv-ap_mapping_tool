@@ -353,7 +353,7 @@ function editmapping_fillfields($form, &$form_state){
 	//get the selected datamodels
 	$datamodel1 =$form_state['complete form']['datamodellist1']['#options'][$form_state['values']['datamodellist1']];
 	$datamodel2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
-	
+
 	//array to put the relations
 	$allrelations = array();
 
@@ -395,7 +395,7 @@ function editmapping_fillfields($form, &$form_state){
 		
 		$form_state['input']['relations_fieldset'][$i]['target_class'] = $row-> mappedclass;
 		$form_state['input']['relations_fieldset'][$i]['target_class_URI'] = $row-> mappedclassuri;
-		$form_state['input']['relations_fieldset'][$i]['target_property'] = $row->mappedproperty;
+		$form_state['input']['relations_fieldset'][$i]['target_property'] = $row-> mappedproperty;
 		$form_state['input']['relations_fieldset'][$i]['target_property_URI'] = $row-> mappedpropertyuri;
 		
 		
