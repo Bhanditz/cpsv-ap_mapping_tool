@@ -13,15 +13,24 @@ function summary_contents() {
 
 	/* read filter values */
 	$url =  "//{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
-	$url =  str_replace("cpsv-ap.semic.eu:8890/cpsv-ap_mapping/test?", "", $url);
+	$url =  str_replace("cpsv-ap.semic.eu:8890/cpsv-ap_mapping/mapped_relations?", "", $url);
 	parse_str($url, $output);
 
-	$source_datamodel = $output['//did1_selective'];
-	$source_class = $output['coreclass_selective'];
-	$relation = $output['relation_selective'];
-	$target_datamodel = $output['did2_selective'];
-	$target_class = $output['mappedclass_selective'];
-	$target_property = $output['mappedproperty_selective'];
+	if ($output[0] == "") {
+		$source_datamodel = "All";
+		$source_class = "All";
+		$relation = "All";
+		$target_datamodel = "All";
+		$target_class = "All";
+		$target_property = "All";
+	} else {
+		$source_datamodel = $output['//did1_selective'];
+		$source_class = $output['coreclass_selective'];
+		$relation = $output['relation_selective'];
+		$target_datamodel = $output['did2_selective'];
+		$target_class = $output['mappedclass_selective'];
+		$target_property = $output['mappedproperty_selective'];
+	}
 
 	/* construct base query */
 	$query = db_select('relations', 'r')
@@ -71,11 +80,11 @@ function summary_contents() {
 	/* add statistics to array */
 	$options= array('0' => '');
 	$options[0] = $count_all;
-	$options[1] = round($count_broad_matches/$count_all*100, 2);
-	$options[2] = round($count_close_matches/$count_all*100, 2);
-	$options[3] = round($count_exact_matches/$count_all*100, 2);
-	$options[4] = round($count_narrow_matches/$count_all*100, 2);
-	$options[5] = round($count_related_matches/$count_all*100, 2);
+	$options[1] = $count_broad_matches;
+	$options[2] = $count_close_matches;
+	$options[3] = $count_exact_matches;
+	$options[4] = $count_narrow_matches;
+	$options[5] = $count_related_matches;
 		  
     return $options;
 }
@@ -114,11 +123,11 @@ function summary_block_view($delta= '') {
 
 
 			$block['content'] = 'Number of relations = ' .  $result[0] . "<br/>" 
-        						. 'Broad matches = ' .  $result[1] . "%" . "<br/>" 
-        						. 'Close matches = ' .  $result[2] . "%" . "<br/>" 
-        						. 'Exact matches = ' .  $result[3] . "%" . "<br/>" 
-        						. 'Narrow matches = ' .  $result[4] . "%" . "<br/>" 
-        						. 'Related matches = ' .  $result[5] . "%" . "<br/>" . drupal_render($example);			
+        						. 'Broad matches = ' .  round($result[1]/result[0]*100, 2) . "%" . "<br/>" 
+        						. 'Close matches = ' .  round($result[2]/result[0]*100, 2) . "%" . "<br/>" 
+        						. 'Exact matches = ' .  round($result[3]/result[0]*100, 2) . "%" . "<br/>" 
+        						. 'Narrow matches = ' .  round($result[4]/result[0]*100, 2) . "%" . "<br/>" 
+        						. 'Related matches = ' .  round($result[5]/result[0]*100, 2) . "%" . "<br/>" . drupal_render($example);			
         }
 
     return $block;
