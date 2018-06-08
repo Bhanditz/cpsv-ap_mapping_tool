@@ -717,3 +717,38 @@ function CPSVAPmapping_get_source_properties_dropdown_array($datamodelArray = ar
 
     return drupal_map_assoc($properties);
 }
+	
+
+
+/*NOT USED*/
+/*
+//populate list of CPSV-AP classes
+function CPSVAPmapping_basic_classes_list(){
+	$classes_name = 'Classes';
+	$myclasses = taxonomy_vocabulary_machine_name_load($classes_name);
+		  
+	$classes_source = taxonomy_get_tree($myclasses->vid);
+	
+	$classes_list = array('0' => '---none---');
+		  
+		  foreach ($classes_source as $item) {
+		  	  $key = $item->tid;
+		  	  $value = $item->name;
+		  	  $classes_list[$key] = $value;
+		  }              
+		  
+	return $classes_list;
+}*/
+
+/*NOT USED*/
+/*//populate list of CPSV-AP properties
+function CPSVAPmapping_basic_properties_list($vocabulary){
+	
+	$classes = taxonomy_get_tree($vocabulary);
+
+  foreach ($classes as $data) {
+    $output[$data->tid] = $data->name;
+  }
+  
+  return $output;
+}*/
