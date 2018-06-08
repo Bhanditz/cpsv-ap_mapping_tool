@@ -16,7 +16,7 @@ function summary_contents() {
 	$url =  str_replace("cpsv-ap.semic.eu:8890/cpsv-ap_mapping/mapped_relations?", "", $url);
 	parse_str($url, $output);
 
-	if ($output[0] == "") {
+	if ($output['//did1_selective'] == "") {
 		$source_datamodel = "All";
 		$source_class = "All";
 		$relation = "All";
@@ -123,11 +123,11 @@ function summary_block_view($delta= '') {
 
 
 			$block['content'] = 'Number of relations = ' .  $result[0] . "<br/>" 
-        						. 'Broad matches = ' .  round($result[1]/result[0]*100, 2) . "%" . "<br/>" 
-        						. 'Close matches = ' .  round($result[2]/result[0]*100, 2) . "%" . "<br/>" 
-        						. 'Exact matches = ' .  round($result[3]/result[0]*100, 2) . "%" . "<br/>" 
-        						. 'Narrow matches = ' .  round($result[4]/result[0]*100, 2) . "%" . "<br/>" 
-        						. 'Related matches = ' .  round($result[5]/result[0]*100, 2) . "%" . "<br/>" . drupal_render($example);			
+        						. 'Broad matches = ' .  round($result[1]/$result[0]*100, 2) . "%" . "<br/>" 
+        						. 'Close matches = ' .  round($result[2]/$result[0]*100, 2) . "%" . "<br/>" 
+        						. 'Exact matches = ' .  round($result[3]/$result[0]*100, 2) . "%" . "<br/>" 
+        						. 'Narrow matches = ' .  round($result[4]/$result[0]*100, 2) . "%" . "<br/>" 
+        						. 'Related matches = ' .  round($result[5]/$result[0]*100, 2) . "%" . "<br/>" . drupal_render($example);			
         }
 
     return $block;
