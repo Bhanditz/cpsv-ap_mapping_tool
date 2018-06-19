@@ -411,9 +411,9 @@ function editmapping_fillfields($form, &$form_state){
 		$relationsrow = array (
 			'sourceclassuri' => $row-> coreclassuri,
 			'sourcepropertyuri' => $row-> corepropertyuri,
-			'relationuri' =>$row->relationuri,
+			'relationuri' =>$row-> relationuri,
 			'targetclassuri' =>$row-> mappedclassuri,
-			'targetpropertyuri' =>$row->mappedpropertyuri
+			'targetpropertyuri' =>$row-> mappedpropertyuri
 		);
 		
 		
@@ -451,15 +451,15 @@ function editmapping_exportfields($form, &$form_state) {
 	for ($i = 0; $i < $form_state['num_relations']; $i++) {
 
 		//determine the kind of match
-		if($form_state['input']['relations_fieldset'][$i]['relation'] = 1) 
+		if($form_state['input']['relations_fieldset'][$i]['relation'] == 1) 
 			$match = "closeMatch";
-		if($form_state['input']['relations_fieldset'][$i]['relation'] = 2) 
+		if($form_state['input']['relations_fieldset'][$i]['relation'] == 2) 
 			$match = "exactMatch";
-		if($form_state['input']['relations_fieldset'][$i]['relation'] = 3) 
+		if($form_state['input']['relations_fieldset'][$i]['relation'] == 3) 
 			$match = "narrowMatch";
-		if($form_state['input']['relations_fieldset'][$i]['relation'] = 4) 
+		if($form_state['input']['relations_fieldset'][$i]['relation'] == 4) 
 			$match = "relatedMatch";
-		if($form_state['input']['relations_fieldset'][$i]['relation'] = 5) 
+		if($form_state['input']['relations_fieldset'][$i]['relation'] == 5) 
 			$match = "broadMatch";
 
 		// if relation between classes, write rdf:Description element
@@ -497,7 +497,7 @@ function editmapping_exportfields($form, &$form_state) {
 			$response .= '"/>
 			<skos:';
 			$response .= $match;
-			$response .=  'rdf:resource="';
+			$response .=  ' rdf:resource="';
 			$response .= $form_state['values']['relations_fieldset'][$i]['target_property_URI'];
 			$response .= '"/>
 			<skos:inScheme rdf:resource="';
