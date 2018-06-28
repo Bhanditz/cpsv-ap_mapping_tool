@@ -455,6 +455,7 @@ function CPSVAPmapping_basic_validate($form, &$form_state){
 
 //submit form 
 function CPSVAPmapping_basic_submit($form, &$form_state) {
+
     
     $root = (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/';
 
@@ -462,7 +463,7 @@ function CPSVAPmapping_basic_submit($form, &$form_state) {
     $dir = getcwd ();
     $datamodelfile = file_get_contents($dir.'/sites/all/modules/CPSVAPmapping/datamodel.txt');
     list($datamodel1,$datamodelURI1) = explode("|",$datamodelfile);
-    $datamodel1 = preg_replace('/\s+/', '', trim(strtolower($datamodel1)));
+    $datamodel1 = $datamodel1;
     
     // get name and base URI datamodel 2
     $select2 = $form_state['complete form']['datamodellist2']['#options'][$form_state['values']['datamodellist2']];
@@ -717,3 +718,4 @@ function CPSVAPmapping_get_source_properties_dropdown_array($datamodelArray = ar
 
     return drupal_map_assoc($properties);
 }
+	

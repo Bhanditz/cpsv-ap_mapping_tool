@@ -389,9 +389,9 @@ function editmapping_fillfields($form, &$form_state){
 		if($row->relation == "Narrow match") 
 			$form_state['input']['relations_fieldset'][$i]['relation'] = 3;
 		if($row->relation == "Related match") 
-			$form_state['input']['relations_fieldset'][$i]['relation'] = 4;
-		if($row->relation == "Broad match") 
 			$form_state['input']['relations_fieldset'][$i]['relation'] = 5;
+		if($row->relation == "Broad match") 
+			$form_state['input']['relations_fieldset'][$i]['relation'] = 4;
 		
 		$form_state['input']['relations_fieldset'][$i]['target_class'] = $row-> mappedclass;
 		$form_state['input']['relations_fieldset'][$i]['target_class_URI'] = $row-> mappedclassuri;

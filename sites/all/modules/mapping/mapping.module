@@ -609,7 +609,7 @@ function mapping_basic_submit($form, &$form_state) {
 	}
 	
 	
-	  if($select1 =="add new") {
+	if($select1 =="add new") {
     db_insert('datamodels')
     ->fields(array(
     	'name' =>$datamodel1,
@@ -621,12 +621,12 @@ function mapping_basic_submit($form, &$form_state) {
     	db_insert('datamodels')
     	->fields(array(
     		'name' =>$datamodel2,
-    		'uri' =>$datamodelURI1, 
+    		'uri' =>$datamodelURI2, 
     	))->execute();
     }
     
     //loop over all the relations
- for($i = 0; $i < $form_state['num_relations']; $i++){
+ 	for($i = 0; $i < $form_state['num_relations']; $i++){
 
  	 //put input of one relation in variables
 	$relation_choice= $form_state['complete form']['relations_fieldset'][$i]['relation']['#options'][$form_state['values']['relations_fieldset'][$i]['relation']];
