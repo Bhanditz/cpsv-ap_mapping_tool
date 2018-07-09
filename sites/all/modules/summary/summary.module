@@ -121,13 +121,12 @@ function summary_block_view($delta= '') {
 
 			$example['chart'] = $chart;
 
-
-			$block['content'] = 'Number of relations = ' .  $result[0] . "<br/>" 
+        	$block['content'] = 'Number of relations = ' .  $result[0] . "<br/>" 
+        						. 'Exact matches = ' .  round($result[3]/$result[0]*100, 2) . "%" . "<br/>"
+        						. 'Narrow matches = ' .  round($result[4]/$result[0]*100, 2) . "%" . "<br/>"
         						. 'Broad matches = ' .  round($result[1]/$result[0]*100, 2) . "%" . "<br/>" 
         						. 'Close matches = ' .  round($result[2]/$result[0]*100, 2) . "%" . "<br/>" 
-        						. 'Exact matches = ' .  round($result[3]/$result[0]*100, 2) . "%" . "<br/>" 
-        						. 'Narrow matches = ' .  round($result[4]/$result[0]*100, 2) . "%" . "<br/>" 
-        						. 'Related matches = ' .  round($result[5]/$result[0]*100, 2) . "%" . "<br/>" . drupal_render($example);			
+        						. 'Related matches = ' .  round($result[5]/$result[0]*100, 2) . "%" . "<br/>" . drupal_render($example);				
         }
 
     return $block;
